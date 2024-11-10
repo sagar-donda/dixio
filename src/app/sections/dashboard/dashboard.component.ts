@@ -20,6 +20,8 @@ import ExportingModule from 'highcharts/modules/exporting';
 import ExportData from 'highcharts/modules/export-data';
 import * as XLSX from 'xlsx';
 import _ from 'lodash';
+import formattedData from '../../../../public/assets/formattedData';
+// import data as defaultformattedData from 'assets/formatted';
 
 ExportingModule(Highcharts);
 ExportData(Highcharts);
@@ -49,8 +51,10 @@ export class DashboardComponent implements OnInit {
   chartOptionsArray: Highcharts.Options[] = [];
   chartLabels: string[] = [];
   chartDataArray: any[] = [];
-  formattedjson: any[] = [];
+  formattedjson: any[] = formattedData;
   filteredData: any[] = [];
+  filteredWithoutDateData: any[] = [];
+  days: any[] = [];
   nooftransaction: number = 0;
   avgtimcompletion: string = '0h';
   avgsptrate: number = 0;
@@ -62,7 +66,9 @@ export class DashboardComponent implements OnInit {
   totalusdFeesInUsd: number = 0;
   chartConstructor = 'mapChart';
   private _selectedTab: string = 'snapshot';
-  constructor(private cdr: ChangeDetectorRef, private papa: Papa) {}
+  constructor(private cdr: ChangeDetectorRef, private papa: Papa) {
+    console.log(this.formattedjson);
+  }
   uniqueNetworks = ['VISA', 'SWIFT', 'Terrapay', 'Thunes', 'Nium'];
   uniqueChannels = ['Web', 'MobileApp', 'API', 'Branch'];
   uniqueDestinations = [
@@ -104,9 +110,9 @@ export class DashboardComponent implements OnInit {
   ];
 
   selectedNetwork = ['All', ...this.uniqueNetworks];
-  selectedChannel = ['Channels', ...this.uniqueChannels];
-  selectedDestination = ['Destinations', ...this.uniqueDestinations];
-  selectedCurrency = ['Currency', ...this.uniqueCurrencies];
+  selectedChannel = ['All', ...this.uniqueChannels];
+  selectedDestination = ['All', ...this.uniqueDestinations];
+  selectedCurrency = ['All', ...this.uniqueCurrencies];
   selectedDateRange = 'Date Range';
   // Display placeholder text instead of selected options
   getPlaceholderText(): string {
@@ -143,13 +149,13 @@ export class DashboardComponent implements OnInit {
     return totalMinutes / recoredLength;
   }
   firstweek = 0;
+
   performanceData(data: any) {
-    const weeksInMonth = Array(5).fill(0); // Default array for up to 5 weeks in a month
-    // Average Time To Completion for each week in the current month
-    console.log(
-      'averageTimeToCompletionData',
-      data.filter((x: any) => x['Status'] === 'Completed')
-    );
+    // Get the number of days in the current month
+    const daysInMonth = moment().daysInMonth();
+    const daysInMonthArray = Array(daysInMonth).fill(0);
+
+    // Average Time To Completion for each day in the current month
     const averageTimeToCompletionData = _(
       data.filter((x: any) => x['Status'] === 'Completed')
     )
@@ -169,13 +175,11 @@ export class DashboardComponent implements OnInit {
         );
       })
       .groupBy((record) =>
-        this.getWeekOfMonth(
-          typeof record['DateCompleted'] === 'string'
-            ? moment(record['DateCompleted'], 'DD/MM/YYYY HH:mm').toDate()
-            : moment(record['DateCompleted']).toDate()
-        )
+        typeof record['DateCompleted'] === 'string'
+          ? moment(record['DateCompleted'], 'DD/MM/YYYY HH:mm').format('DD')
+          : moment(record['DateCompleted']).format('DD')
       )
-      .map((records, week) => {
+      .map((records, day) => {
         const totalMinutes = records.reduce((sum, record) => {
           const dateSent =
             typeof record['DateSent'] === 'string'
@@ -186,60 +190,58 @@ export class DashboardComponent implements OnInit {
               ? moment(record['DateCompleted'], 'DD/MM/YYYY HH:mm')
               : moment(record['DateCompleted']);
 
-          const timeDifference = completeDate.diff(dateSent, 'minutes'); // Convert to minutes
-
-          // console.log(record['DateSent'], record, completeDate, timeDifference);
+          const timeDifference = completeDate.diff(dateSent, 'minutes');
           return sum + timeDifference;
         }, 0);
         return {
-          week: parseInt(week, 10),
+          day: parseInt(day, 10),
           averageCompletionTime: this.formatMinutesToHoursAndMinutes(
             totalMinutes,
             records.length
-          ), // Average in minutes
-          averageCompletionMinitues: totalMinutes / records.length, // Average in hours
-          averageCompletion: records.length, // Average in hours
+          ),
+          averageCompletionMinutes: totalMinutes / records.length,
+          averageCompletion: records.length,
           totalMinutes,
         };
       })
       .value();
+
     const totalAvgMinutes =
       averageTimeToCompletionData.reduce(
-        (a: number, b: any) => a + b.averageCompletionMinitues,
+        (a: number, b: any) => a + b.averageCompletionMinutes,
         0
       ) / averageTimeToCompletionData.length;
 
-    // Calculate hours and exact minutes without using rounding or truncation
     const hours = totalAvgMinutes / 60;
-    const wholeHours = parseInt(hours.toString().split('.')[0]); // Extract integer part as hours
+    const wholeHours = parseInt(hours.toString().split('.')[0]);
     const exactMinutes = this.toFixedWithoutRounding(
       (hours - wholeHours) * 60,
       2
-    ); // Exact minutes without rounding
+    );
 
-    // Formatting the output based on whether there’s an hour component
     this.avgtimcompletion =
       wholeHours > 0
         ? `${wholeHours}h${exactMinutes}Mins`
+        : isNaN(exactMinutes)
+        ? '0Mins'
         : `${exactMinutes}Mins`;
-    const averageTimeToCompletionSeries = weeksInMonth.map((_, week) => {
-      const data = averageTimeToCompletionData.find((d) => d.week === week + 1); // weeks start from 1
+
+    const averageTimeToCompletionSeries = daysInMonthArray.map((_, day) => {
+      const data = averageTimeToCompletionData.find((d) => d.day === day + 1); // days start from 1
       return data ? data.averageCompletionTime : 0;
     });
 
-    // Average STP Rate Data for each week in the current month
+    // Average STP Rate Data for each day in the current month
     const averageStpRateData = _(
       data.filter((x: any) => x['Status'] !== 'Pending')
     )
       .filter((record) => record['DateSent'])
       .groupBy((record) =>
-        this.getWeekOfMonth(
-          typeof record['DateSent'] === 'string'
-            ? moment(record['DateSent'], 'DD/MM/YYYY HH:mm').toDate()
-            : moment(record['DateSent']).toDate()
-        )
+        typeof record['DateCompleted'] === 'string'
+          ? moment(record['DateCompleted'], 'DD/MM/YYYY HH:mm').format('DD')
+          : moment(record['DateCompleted']).format('DD')
       )
-      .map((records, week) => {
+      .map((records, day) => {
         const completedCount = records.filter(
           (record) => record.Status === 'Completed'
         ).length;
@@ -248,7 +250,7 @@ export class DashboardComponent implements OnInit {
         ).length;
         const stpRate = (completedCount / (completedCount + failedCount)) * 100;
         return {
-          week: parseInt(week, 10),
+          day: parseInt(day, 10),
           stpRate: stpRate,
           completedCount,
           failedCount,
@@ -263,14 +265,17 @@ export class DashboardComponent implements OnInit {
       2
     );
 
-    const averageStpRateSeries = weeksInMonth.map((_, week) => {
-      const data = averageStpRateData.find((d) => d.week === week + 1);
+    const averageStpRateSeries = daysInMonthArray.map((_, day) => {
+      const data = averageStpRateData.find((d) => d.day === day + 1);
       return data ? data.stpRate : 0;
     });
-    // Extracting all FeesInUsd values from the data array
     const feesArray = data
       .filter((x: any) => x['Status'] === 'Completed')
-      .map((item: any) => item.FeesInUsd);
+      .map((item: any) =>
+        typeof item.FeesInUsd === 'number'
+          ? item.FeesInUsd
+          : parseFloat(item.FeesInUsd.replace(',', '.'))
+      );
 
     // Finding minimum and maximum fees per transaction
     this.minimumfeepertransaction = feesArray.length
@@ -280,26 +285,24 @@ export class DashboardComponent implements OnInit {
       ? Math.max(...feesArray)
       : 0;
 
-    // Average Fee Per Transaction for each week in the current month
+    // Average Fee Per Transaction for each day in the current month
     const averageFeePerTransactionData = _(
       data.filter((x: any) => x['Status'] === 'Completed')
     )
       .filter((record) => record['DateSent'] && record['FeesInUsd'])
       .groupBy((record) =>
-        this.getWeekOfMonth(
-          typeof record['DateSent'] === 'string'
-            ? moment(record['DateSent'], 'DD/MM/YYYY HH:mm').toDate()
-            : moment(record['DateSent']).toDate()
-        )
+        typeof record['DateCompleted'] === 'string'
+          ? moment(record['DateCompleted'], 'DD/MM/YYYY HH:mm').format('DD')
+          : moment(record['DateCompleted']).format('DD')
       )
-      .map((records, week) => {
+      .map((records, day) => {
         const totalFees = records.reduce(
           (sum, record) =>
             record['id'] ? sum + parseFloat(record['FeesInUsd']) : sum + 0,
           0
         );
         return {
-          week: parseInt(week, 10),
+          day: parseInt(day, 10),
           averageFee: totalFees / records.length,
         };
       })
@@ -312,54 +315,63 @@ export class DashboardComponent implements OnInit {
       ) / averageFeePerTransactionData.length,
       2
     );
-    const averageFeePerTransactionSeries = weeksInMonth.map((_, week) => {
-      const data = averageFeePerTransactionData.find(
-        (d) => d.week === week + 1
-      );
+
+    const averageFeePerTransactionSeries = daysInMonthArray.map((_, day) => {
+      const data = averageFeePerTransactionData.find((d) => d.day === day + 1);
       return data ? data.averageFee : 0;
     });
 
-    // Total Fees Per Week Per Route for each week in the current month
-    const totalFeesPerRouteData = _(
-      data.filter((x: any) => x['Status'] === 'Completed')
-    )
-      .filter(
-        (record) => record['DateSent'] && record['FeesInUsd'] && record['Route']
-      )
-      .groupBy((record) =>
-        this.getWeekOfMonth(
-          typeof record['DateSent'] === 'string'
-            ? moment(record['DateSent'], 'DD/MM/YYYY HH:mm').toDate()
-            : moment(record['DateSent']).toDate()
-        )
-      )
-      .map((records, week) => {
-        const routes = _.groupBy(records, 'Route');
-        return {
-          week: parseInt(week, 10),
-          routes: Object.keys(routes).map((route) => ({
-            name: route,
-            totalFees: routes[route].reduce(
-              (sum, record) => sum + parseFloat(record['FeesInUsd']),
-              0
-            ),
-          })),
-        };
-      })
-      .value();
-
+    // Initialize an object to hold the total fees per route for each of the last 12 months
     const totalFeesPerRouteSeries: any = {};
 
-    totalFeesPerRouteData.forEach((data) => {
-      data.routes.forEach((routeData) => {
-        if (!totalFeesPerRouteSeries[routeData.name]) {
-          totalFeesPerRouteSeries[routeData.name] = Array(5).fill(0); // Initialize with 0s for each week
+    // Get the last 12 months, including the current month
+    const last12Months = Array.from({ length: 12 }, (_, i) => {
+      const date = moment().subtract(i, 'months');
+      return {
+        month: date.format('MMMM'),
+        monthIndex: date.month(),
+        year: date.year(),
+      };
+    }).reverse(); // Reverse to get the months in chronological order
+
+    // Loop through each of the last 12 months to calculate total fees per route
+    last12Months.forEach(({ monthIndex, year }, index) => {
+      const monthData = this.filteredWithoutDateData.filter((record: any) => {
+        const dateCompleted =
+          typeof record['DateCompleted'] === 'string'
+            ? moment(record['DateCompleted'], 'DD/MM/YYYY HH:mm')
+            : moment(record['DateCompleted']);
+        return (
+          dateCompleted.month() === monthIndex && dateCompleted.year() === year
+        );
+      });
+
+      // Group by route and calculate total fees for each route in the current month
+      const groupedData = _(monthData)
+        .filter(
+          (record) =>
+            record['DateSent'] && record['FeesInUsd'] && record['Route']
+        )
+        .groupBy('Route')
+        .map((records, route) => {
+          const totalFees = records.reduce(
+            (sum, record) => sum + parseFloat(record['FeesInUsd']),
+            0
+          );
+          return { route, totalFees };
+        })
+        .value();
+
+      // Populate the totalFeesPerRouteSeries object with the monthly data
+      groupedData.forEach((routeData) => {
+        if (!totalFeesPerRouteSeries[routeData.route]) {
+          totalFeesPerRouteSeries[routeData.route] = Array(12).fill(0); // Initialize with 0s for each month
         }
-        totalFeesPerRouteSeries[routeData.name][data.week - 1] =
-          routeData.totalFees;
+        totalFeesPerRouteSeries[routeData.route][index] = routeData.totalFees;
       });
     });
 
+    // Format the data for charting
     const formattedTotalFeesPerRouteSeries = Object.keys(
       totalFeesPerRouteSeries
     ).map((route, index) => ({
@@ -368,6 +380,12 @@ export class DashboardComponent implements OnInit {
       data: totalFeesPerRouteSeries[route],
       type: 'column',
     }));
+
+    console.log(
+      averageTimeToCompletionSeries.map((x) => ({
+        value: this.toFixedWithoutRounding(x, 2),
+      }))
+    );
     // Store the results in `allchartData`
     this.allchartData['performance'] = [
       {
@@ -398,55 +416,59 @@ export class DashboardComponent implements OnInit {
         ytitle: 'Average Fee per Transaction',
       },
       {
-        title: 'Total Fees Per Week Per Route',
+        title: 'Total Fees Per Day Per Route',
         data: formattedTotalFeesPerRouteSeries,
         formatesuffix: '',
         formateprefix: '',
-        ytitle: 'Total Fees Per Week Per Route',
+        ytitle: 'Total Fees Per Day Per Route',
       },
     ];
   }
+
   getWeekOfMonth(date: Date) {
     const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
     const dayOfMonth = date.getDate();
     return Math.ceil((dayOfMonth + startOfMonth.getDay()) / 7);
   }
   processTimeEvolutionData(data: any) {
-    // Group data by week of DateSent within the current month
+    // Group data by day of DateSent within the current month
     const groupedData = _(data)
       .groupBy((item) => {
         const date =
           typeof item['DateSent'] === 'string'
             ? moment(item['DateSent'], 'DD/MM/YYYY HH:mm').toDate()
             : moment(item['DateSent']).toDate();
-        return `${date.getMonth()}-${this.getWeekOfMonth(date)}`; // Unique key for each week in the month
+        return `${date.getMonth() + 1}-${date.getDate()}`; // Unique key for each day in the month
       })
       .value();
 
-    // Initialize each metric array for chart data, assuming a maximum of 5 weeks per month
-    const numberOfTransactions = Array(5).fill(0);
-    const valueOfTransactions = Array(5).fill(0);
-    const avgValuePerTransaction = Array(5).fill(0);
-    const uniqueUsers = Array(5).fill(0);
+    // Get the number of days in the current month for initializing arrays
+    const daysInMonth = moment().daysInMonth();
+
+    // Initialize each metric array for chart data, assuming a maximum of days in the current month
+    const numberOfTransactions = Array(daysInMonth).fill(0);
+    const valueOfTransactions = Array(daysInMonth).fill(0);
+    const avgValuePerTransaction = Array(daysInMonth).fill(0);
+    const uniqueUsers = Array(daysInMonth).fill(0);
 
     // Populate each metric
-    Object.keys(groupedData).forEach((weekKey) => {
-      const [month, week] = weekKey.split('-').map(Number); // Split key to get month and week
-      const weekIndex = week - 1; // Array index for each week
-      const weekData = groupedData[weekKey];
+    Object.keys(groupedData).forEach((dayKey) => {
+      const [month, day] = dayKey.split('-').map(Number); // Split key to get month and day
+      const dayIndex = day - 1; // Array index for each day
+      const dayData = groupedData[dayKey];
 
       // Number of Transactions
-      numberOfTransactions[weekIndex] = weekData.length;
+      numberOfTransactions[dayIndex] = dayData.length;
 
       // Value of Transactions (Sum of AmountInUSD)
-      valueOfTransactions[weekIndex] = _.sumBy(weekData, 'AmountInUSD');
+      valueOfTransactions[dayIndex] = _.sumBy(dayData, 'AmountInUSD');
 
       // Average Value Per Transaction
-      avgValuePerTransaction[weekIndex] =
-        valueOfTransactions[weekIndex] / (numberOfTransactions[weekIndex] || 1);
+      avgValuePerTransaction[dayIndex] =
+        valueOfTransactions[dayIndex] / (numberOfTransactions[dayIndex] || 1);
 
       // Number of Unique Users (count of unique InitiatorId)
-      uniqueUsers[weekIndex] = _.uniqBy(weekData, 'InitiatorId').length;
+      uniqueUsers[dayIndex] = _.uniqBy(dayData, 'InitiatorId').length;
     });
 
     // Prepare each chart's data
@@ -487,11 +509,11 @@ export class DashboardComponent implements OnInit {
   }
 
   clearFilters() {
-    this.selectedNetwork = ['Networks'];
-    this.selectedChannel = ['Channels'];
-    this.selectedDestination = ['Destinations'];
-    this.selectedCurrency = ['Currency'];
-    this.selectedDateRange = 'Date Range';
+    this.selectedNetwork = ['All', ...this.uniqueNetworks];
+    this.selectedChannel = ['All', ...this.uniqueChannels];
+    this.selectedDestination = ['All', ...this.uniqueDestinations];
+    this.selectedCurrency = ['All', ...this.uniqueCurrencies];
+    this.selectedDateRange = 'currentmonth';
 
     this.filterData(); // Re-apply filter with default values
   }
@@ -536,26 +558,34 @@ export class DashboardComponent implements OnInit {
           : [];
         break;
     }
+    console.log(this.selectedChannel);
     this.filterData(); // Re-apply filter with default values
   }
 
   // Handle individual selection changes
   onSelectionChange(category: string) {
     switch (category) {
-      case 'networks':
-        if (this.isAllSelected('networks')) {
+      case 'Networks':
+        if (this.isAllSelected('All')) {
+          this.selectedNetwork = ['All', ...this.uniqueNetworks];
+        } else if (
+          this.selectedNetwork.filter((item) => item !== 'All').length ===
+          this.uniqueNetworks.filter((item) => item !== 'All').length
+        ) {
           this.selectedNetwork = ['All', ...this.uniqueNetworks];
         } else {
           this.selectedNetwork = this.selectedNetwork.filter(
             (item) => item !== 'All'
           );
-          if (this.selectedNetwork.length === 0) {
-            this.selectedNetwork = ['Networks'];
-          }
         }
         break;
-      case 'channels':
-        if (this.isAllSelected('channels')) {
+      case 'Channels':
+        if (this.isAllSelected('All')) {
+          this.selectedChannel = ['All', ...this.uniqueChannels];
+        } else if (
+          this.selectedChannel.filter((item) => item !== 'All').length ===
+          this.uniqueChannels.filter((item) => item !== 'All').length
+        ) {
           this.selectedChannel = ['All', ...this.uniqueChannels];
         } else {
           this.selectedChannel = this.selectedChannel.filter(
@@ -563,8 +593,13 @@ export class DashboardComponent implements OnInit {
           );
         }
         break;
-      case 'destinations':
-        if (this.isAllSelected('destinations')) {
+      case 'Destinations':
+        if (this.isAllSelected('All')) {
+          this.selectedDestination = ['All', ...this.uniqueDestinations];
+        } else if (
+          this.selectedDestination.filter((item) => item !== 'All').length ===
+          this.uniqueDestinations.filter((item) => item !== 'All').length
+        ) {
           this.selectedDestination = ['All', ...this.uniqueDestinations];
         } else {
           this.selectedDestination = this.selectedDestination.filter(
@@ -572,8 +607,13 @@ export class DashboardComponent implements OnInit {
           );
         }
         break;
-      case 'currencies':
-        if (this.isAllSelected('currencies')) {
+      case 'Currency':
+        if (this.isAllSelected('All')) {
+          this.selectedCurrency = ['All', ...this.uniqueCurrencies];
+        } else if (
+          this.selectedCurrency.filter((item) => item !== 'All').length ===
+          this.uniqueCurrencies.filter((item) => item !== 'All').length
+        ) {
           this.selectedCurrency = ['All', ...this.uniqueCurrencies];
         } else {
           this.selectedCurrency = this.selectedCurrency.filter(
@@ -582,6 +622,7 @@ export class DashboardComponent implements OnInit {
         }
         break;
     }
+    console.log(this.selectedNetwork);
     this.filterData();
   }
   getLastThreeMonths() {
@@ -613,7 +654,6 @@ export class DashboardComponent implements OnInit {
   filterData() {
     const today = moment();
     let startDate: moment.Moment, endDate: moment.Moment;
-    let currentMonth: string = 'Oct';
 
     switch (this.selectedDateRange) {
       case 'today':
@@ -632,13 +672,19 @@ export class DashboardComponent implements OnInit {
         startDate = today.startOf('year');
         endDate = today.endOf('year');
         break;
-      case 'sep':
-        startDate = moment().month(8).startOf('month'); // September (0-indexed, so 8 is September)
-        endDate = moment().month(8).endOf('month'); // September
+      case 'currentmonth':
+        startDate = moment().subtract(2, 'month').startOf('month'); // Start of the current month
+        endDate = moment().subtract(2, 'month').endOf('month'); // End of the current month
+        this.days = Array.from({ length: endDate.date() }, (_, i) => i + 1);
         break;
-      case 'aug':
-        startDate = moment().month(7).startOf('month'); // August (0-indexed, so 7 is August)
-        endDate = moment().month(7).endOf('month'); // August
+      case 'lastmonth':
+        startDate = moment().subtract(3, 'month').startOf('month'); // Start of the previous month
+        endDate = moment().subtract(3, 'month').endOf('month'); // End of the previous month
+        this.days = Array.from({ length: endDate.date() }, (_, i) => i + 1);
+        break;
+      case 'lastfourmonth':
+        startDate = moment().subtract(3, 'month').startOf('month'); // Start of the previous 3 month
+        endDate = moment().endOf('month'); // End of current month
         break;
     }
     // Filtering logic based on selected values
@@ -647,13 +693,13 @@ export class DashboardComponent implements OnInit {
       const itemDate = moment(item['DateSent'], 'DD/MM/YYYY HH:mm');
 
       return (
-        (this.selectedNetwork.includes('Networks') ||
+        (this.selectedNetwork.includes('All') ||
           this.selectedNetwork.includes(item['Route'])) &&
-        (this.selectedChannel.includes('Channels') ||
+        (this.selectedChannel.includes('All') ||
           this.selectedChannel.includes(item['InitiationChannel'])) &&
-        (this.selectedDestination.includes('Destinations') ||
+        (this.selectedDestination.includes('All') ||
           this.selectedDestination.includes(item['DestinationCountry'])) &&
-        (this.selectedCurrency.includes('Currency') ||
+        (this.selectedCurrency.includes('All') ||
           this.selectedCurrency.includes(item['Currency'])) &&
         (this.selectedDateRange === 'Date Range' ||
           moment(itemDate, 'DD/MM/YYYY HH:mm').isBetween(
@@ -662,6 +708,19 @@ export class DashboardComponent implements OnInit {
             null,
             '[]'
           ))
+      );
+    });
+    // Filtering logic based on selected values
+    this.filteredWithoutDateData = this.formattedjson.filter((item) => {
+      return (
+        (this.selectedNetwork.includes('All') ||
+          this.selectedNetwork.includes(item['Route'])) &&
+        (this.selectedChannel.includes('All') ||
+          this.selectedChannel.includes(item['InitiationChannel'])) &&
+        (this.selectedDestination.includes('All') ||
+          this.selectedDestination.includes(item['DestinationCountry'])) &&
+        (this.selectedCurrency.includes('All') ||
+          this.selectedCurrency.includes(item['Currency']))
       );
     });
 
@@ -688,8 +747,9 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.updateChartList();
     this.processData([], 'snapshot');
+    this.filterData();
+    this.updateChartList();
   }
 
   get selectedTab(): string {
@@ -698,7 +758,8 @@ export class DashboardComponent implements OnInit {
 
   set selectedTab(value: string) {
     this._selectedTab = value;
-    this.processData(this.formattedjson, this._selectedTab); // Call updateChartList whenever selectedTab changes
+    this.filterData();
+    // this.processData(this.formattedjson, this._selectedTab); // Call updateChartList whenever selectedTab changes
     this.updateChartList(); // Call updateChartList whenever selectedTab changes
   }
 
@@ -883,7 +944,8 @@ export class DashboardComponent implements OnInit {
   }
   toFixedWithoutRounding(value: number, decimals: number) {
     const factor = Math.pow(10, decimals);
-    return Math.floor(value * factor) / factor;
+    const d = Math.floor(value * factor) / factor;
+    return isNaN(d) ? 0 : Math.floor(value * factor) / factor;
   }
   parseCsv(csvData: string): void {
     this.papa.parse(csvData, {
@@ -926,7 +988,6 @@ export class DashboardComponent implements OnInit {
           }
         });
         this.formattedjson = result.data;
-
         this.extractdata();
       },
     });
@@ -1189,7 +1250,18 @@ export class DashboardComponent implements OnInit {
               text: '',
             },
             xAxis: {
-              categories: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
+              categories: this.days,
+              // tickPositions: [
+              //   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+              //   18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+              // ],
+              // endOnTick: false, // Ensures the axis doesn't end on a tick, showing all categories
+              labels: {
+                formatter: function () {
+                  // Assuming `this.value` represents the index within `categories`
+                  return (this as any).value + 1; // Displays the day number (1-based index)
+                },
+              },
               title: {
                 text: '',
               },
@@ -1225,13 +1297,12 @@ export class DashboardComponent implements OnInit {
                     value = value.toFixed(1);
                   }
 
-                  return `${chart.formateprefix || ''}${value}${suffix}`;
+                  return `${value}${suffix}`;
                 },
               },
             },
             tooltip: {
-              headerFormat: '',
-              pointFormat: '{point.name} <b>{point.y:.0f}</b>',
+              pointFormat: '<b>${point.y:.1f} </b>',
             },
             series: [
               {
@@ -1301,7 +1372,7 @@ export class DashboardComponent implements OnInit {
                   suffix = 'K'; // Thousands
                 }
 
-                return `$${value.toFixed(2)}${suffix}`;
+                return `${value ? value?.toFixed(2) : value}${suffix}`;
               };
 
               // Generate the flag icon based on country code
@@ -1405,13 +1476,7 @@ export class DashboardComponent implements OnInit {
                   text: 'Total fees per month per route',
                 },
                 xAxis: {
-                  categories: [
-                    'Week 1',
-                    'Week 2',
-                    'Week 3',
-                    'Week 4',
-                    'Week 5',
-                  ],
+                  categories: this.days,
                 },
                 yAxis: {
                   min: 0,
@@ -1438,6 +1503,9 @@ export class DashboardComponent implements OnInit {
                 chart: {
                   type: 'line',
                 },
+                scrollbar: {
+                  enabled: false,
+                },
                 credits: {
                   enabled: false,
                 },
@@ -1448,13 +1516,13 @@ export class DashboardComponent implements OnInit {
                   pointFormat: '<b>${point.y:.1f} </b>',
                 },
                 xAxis: {
-                  categories: [
-                    'Week 1',
-                    'Week 2',
-                    'Week 3',
-                    'Week 4',
-                    'Week 5',
-                  ],
+                  categories: this.days,
+                  labels: {
+                    formatter: function () {
+                      // Assuming `this.value` represents the index within `categories`
+                      return (this as any).value + 1; // Displays the day number (1-based index)
+                    },
+                  },
                 },
                 yAxis: {
                   title: {

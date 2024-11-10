@@ -3,6 +3,7 @@ import { DashboardComponent } from './sections/dashboard/dashboard.component'; /
 import { NgModule } from '@angular/core';
 export const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' }, // Redirect to the dashboard by default
+  { path: 'demo', redirectTo: '/dashboard1', pathMatch: 'full' }, // Redirect to the dashboard by default
   { path: 'dashboard', component: DashboardComponent }, // Load the DashboardComponent for the /dashboard route
   { path: '**', redirectTo: '/dashboard' }, // Redirect any unknown routes to the dashboard
 ];
