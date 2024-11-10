@@ -51,7 +51,15 @@ export class DashboardComponent implements OnInit {
   chartOptionsArray: Highcharts.Options[] = [];
   chartLabels: string[] = [];
   chartDataArray: any[] = [];
-  formattedjson: any[] = formattedData;
+  formattedjson: any[] = formattedData.map((x) => {
+    return {
+      ...x,
+      FeesInUsd:
+        x.FeesInUsd === 'string'
+          ? parseFloat(x.FeesInUsd.replace(',', '.'))
+          : x.FeesInUsd,
+    };
+  });
   filteredData: any[] = [];
   filteredWithoutDateData: any[] = [];
   days: any[] = [];
@@ -287,7 +295,7 @@ export class DashboardComponent implements OnInit {
 
     // Average Fee Per Transaction for each day in the current month
     const averageFeePerTransactionData = _(
-      data.filter((x: any) => x['Status'] === 'Completed')
+      data.filter((x: any) => x['Status'] !== 'Pending')
     )
       .filter((record) => record['DateSent'] && record['FeesInUsd'])
       .groupBy((record) =>
@@ -691,7 +699,14 @@ export class DashboardComponent implements OnInit {
     this.filteredData = this.formattedjson.filter((item) => {
       // Parse item['DateSent'] with the correct format
       const itemDate = moment(item['DateSent'], 'DD/MM/YYYY HH:mm');
-
+      item.FeesInUsd =
+        item.FeesInUsd === 'string'
+          ? parseFloat(item.FeesInUsd.replace(',', '.'))
+          : item.FeesInUsd;
+      item.AmountInUSD =
+        item.AmountInUSD === 'string'
+          ? parseFloat(item.AmountInUSD.replace(',', '.'))
+          : item.AmountInUSD;
       return (
         (this.selectedNetwork.includes('All') ||
           this.selectedNetwork.includes(item['Route'])) &&
@@ -712,6 +727,16 @@ export class DashboardComponent implements OnInit {
     });
     // Filtering logic based on selected values
     this.filteredWithoutDateData = this.formattedjson.filter((item) => {
+      const itemDate = moment(item['DateSent'], 'DD/MM/YYYY HH:mm');
+      item.FeesInUsd =
+        item.FeesInUsd === 'string'
+          ? parseFloat(item.FeesInUsd.replace(',', '.'))
+          : item.FeesInUsd;
+      item.AmountInUSD =
+        item.AmountInUSD === 'string'
+          ? parseFloat(item.AmountInUSD.replace(',', '.'))
+          : item.AmountInUSD;
+
       return (
         (this.selectedNetwork.includes('All') ||
           this.selectedNetwork.includes(item['Route'])) &&
@@ -728,12 +753,25 @@ export class DashboardComponent implements OnInit {
       (x: any) => x['Status'] === 'Completed'
     ).length;
 
-    this.totalusdamount = this.filteredData
+    this.totalusdamount = this.filteredWithoutDateData
       .filter((x: any) => x['Status'] === 'Completed')
-      .reduce((a, b) => a + (b['AmountInUSD'] | 0), 0);
-    this.totalusdFeesInUsd = this.filteredData
+      .reduce((a, b) => {
+        const val =
+          b.AmountInUSD === 'string'
+            ? parseFloat(b.AmountInUSD.replace(',', '.'))
+            : b.AmountInUSD || 0;
+        return a + val;
+      }, 0);
+    this.totalusdFeesInUsd = this.filteredWithoutDateData
       .filter((x: any) => x['Status'] === 'Completed')
-      .reduce((a, b) => a + (b['FeesInUsd'] | 0), 0);
+      .reduce((a, b) => {
+        const val =
+          b.FeesInUsd === 'string'
+            ? parseFloat(b.FeesInUsd.replace(',', '.'))
+            : parseFloat(b.FeesInUsd);
+        return a + val;
+      }, 0);
+    console.log(this.totalusdFeesInUsd);
     this.noofunqiueuser = _.uniqBy(
       this.filteredData.filter((x: any) => x['Status'] === 'Completed'),
       'InitiatorId'
@@ -1163,12 +1201,22 @@ export class DashboardComponent implements OnInit {
         name: transactions[0].countryName || code, // Use country name if available
         transactions: transactions.length,
         z: transactions.length,
-        totalValue: _.sumBy(transactions, 'AmountInUSD'),
-        avgValue: _.meanBy(transactions, 'AmountInUSD'),
+        totalValue: _.sumBy(
+          transactions,
+          (transaction) => parseFloat(transaction.AmountInUSD) || 0
+        ),
+        avgValue: _.meanBy(
+          transactions,
+          (transaction) => parseFloat(transaction.AmountInUSD) || 0
+        ),
         users: _.uniqBy(transactions, 'InitiatorId').length,
-        feesPaid: _.sumBy(transactions, 'FeesInUsd') || 0,
+        feesPaid: _.sumBy(
+          transactions,
+          (transaction) => parseFloat(transaction.FeesInUsd) || 0
+        ),
       }))
       .value();
+    console.log(groupedData);
     this.mapData = groupedData;
   }
 
@@ -1193,9 +1241,7 @@ export class DashboardComponent implements OnInit {
             widthAdjust: 100, // This can also be removed if there is no title
           },
           tooltip: {
-            headerFormat: '',
-            pointFormat:
-              '<span style="color:{point.color}">\u25cf</span> {point.name}: <b>{point.y:.0f}</b>',
+            pointFormat: `<b>${chart.formateprefix}{point.y:.1f}${chart.formatesuffix} </b>`,
           },
           accessibility: {
             point: {
@@ -1302,7 +1348,7 @@ export class DashboardComponent implements OnInit {
               },
             },
             tooltip: {
-              pointFormat: '<b>${point.y:.1f} </b>',
+              pointFormat: `<b>${chart.formateprefix}{point.y:.1f}${chart.formatesuffix} </b>`,
             },
             series: [
               {
@@ -1372,7 +1418,7 @@ export class DashboardComponent implements OnInit {
                   suffix = 'K'; // Thousands
                 }
 
-                return `${value ? value?.toFixed(2) : value}${suffix}`;
+                return `${value ? value.toFixed(2) : value}${suffix}`;
               };
 
               // Generate the flag icon based on country code
