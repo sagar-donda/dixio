@@ -229,7 +229,7 @@ export class DashboardComponent implements OnInit {
 
     this.avgtimcompletion =
       wholeHours > 0
-        ? `${wholeHours}h${exactMinutes}Mins`
+        ? `${wholeHours}H ${exactMinutes}Mins`
         : isNaN(exactMinutes)
         ? '0Mins'
         : `${exactMinutes}Mins`;
@@ -401,7 +401,7 @@ export class DashboardComponent implements OnInit {
         data: averageTimeToCompletionSeries.map((x) => ({
           value: this.toFixedWithoutRounding(x, 2),
         })),
-        formatesuffix: 'Mins',
+        formatesuffix: ' Mins',
         formateprefix: '',
         ytitle: 'Average time to completion',
       },
@@ -1241,7 +1241,9 @@ export class DashboardComponent implements OnInit {
             widthAdjust: 100, // This can also be removed if there is no title
           },
           tooltip: {
-            pointFormat: `<b>${chart.formateprefix}{point.y:.1f}${chart.formatesuffix} </b>`,
+            pointFormat: `<b>${chart.formateprefix || ''}{point.y:.1f}${
+              chart.formatesuffix || ''
+            } </b>`,
           },
           accessibility: {
             point: {
@@ -1348,7 +1350,9 @@ export class DashboardComponent implements OnInit {
               },
             },
             tooltip: {
-              pointFormat: `<b>${chart.formateprefix}{point.y:.1f}${chart.formatesuffix} </b>`,
+              pointFormat: `<b>${chart.formateprefix || ''}{point.y:.1f}${
+                chart.formatesuffix || ''
+              } </b>`,
             },
             series: [
               {
@@ -1438,7 +1442,7 @@ export class DashboardComponent implements OnInit {
                       }</td>
                     </tr>
                     <tr>
-                      <td style="text-align: left;"># of Transactions:</td>
+                      <td style="text-align: left;"> Of Transactions:</td>
                       <td style="text-align: right; font-weight: bold;">${Number(
                         point.transactions
                       ).toLocaleString()}</td>
@@ -1535,7 +1539,9 @@ export class DashboardComponent implements OnInit {
                   enabled: true, // Hide the legend
                 },
                 tooltip: {
-                  pointFormat: `<b>${chart.formateprefix}{point.y:.1f}${chart.formatesuffix} </b>`,
+                  pointFormat: `<b>${chart.formateprefix || ''}{point.y:.1f}${
+                    chart.formatesuffix || ''
+                  } </b>`,
                 },
                 plotOptions: {
                   column: {
