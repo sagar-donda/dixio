@@ -1,9 +1,9 @@
- .sidenav {
+.sidenav {
   /* The background property is added to clearly distinguish the borders between drawer and main
      content */
-  border-radius: 0px;   
+  border-radius: 0px;
   background: white;
-  padding: 0   !important;
+  padding: 0 !important;
 }
 
 .icon-wrapper {
@@ -16,43 +16,36 @@
   fill: white; /* Change the color of the SVG if needed */
 }
 .example-button-container {
-  
-  
-  
   margin-top: 24px;
-  background-color: #1173BC;
+  background-color: #1173bc;
   padding: 10px 12px 10px 12px;
   border-radius: 6px;
-  color: #FFFFFF;
+  color: #ffffff;
   display: block !important;
 }
 
 ::ng-deep .logo {
-  
-  
   background: rgba(255, 255, 255, 1);
-  
-  
+
   padding: 21px 15px 21px 15px !important;
   justify-content: center !important;
   display: block !important;
 }
 
-
-::ng-deep .mat-drawer.mat-drawer-side { 
-  border-right: 1px solid rgba(212, 216, 224, 1)
+::ng-deep .mat-drawer.mat-drawer-side {
+  border-right: 1px solid rgba(212, 216, 224, 1);
 }
 
 ::ng-deep .logo {
-         justify-self: center !important;
+  justify-self: center !important;
 }
 ::ng-deep .border_dash {
   border-bottom: 1px solid rgba(212, 216, 224, 1) !important;
 }
- 
+
 ::ng-deep .example-button-container {
   justify-self: center !important;
-} 
+}
 .dashboard-button {
   display: flex;
   align-items: center;
@@ -73,11 +66,11 @@
 .nav-content {
   display: flex;
   align-items: center;
-  gap: 8px;  /* Space between icon and text */
+  gap: 8px; /* Space between icon and text */
 }
 
 .mat-icon {
-  margin-right: 0;  /* Remove default margin */
+  margin-right: 0; /* Remove default margin */
   vertical-align: middle;
 }
 
@@ -96,7 +89,6 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  
 }
 .sidenav {
   width: 220px;
@@ -104,7 +96,7 @@
 
 @media screen and (min-width: 1536px) {
   .sidenav {
-    width: 300px !important;  /* !important to override inline styles */
+    width: 300px !important; /* !important to override inline styles */
   }
 }
 
@@ -114,6 +106,6 @@
 
 @media screen and (min-width: 1536px) {
   .example-button-container {
-    width: 268px !important;  /* !important to override inline styles */
+    width: 268px !important; /* !important to override inline styles */
   }
 }
