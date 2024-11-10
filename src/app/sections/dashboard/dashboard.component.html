@@ -268,7 +268,13 @@
         accept=".xlsx, .xls, .csv"
         #fileInput
       />
-      <button mat-raised-button color="primary" (click)="fileInput.click()">
+
+      <button
+        mat-raised-button
+        color="primary"
+        class="ml-4 clear font-bold"
+        (click)="fileInput.click()"
+      >
         <mat-icon>upload_file</mat-icon> Import
       </button>
     </div>

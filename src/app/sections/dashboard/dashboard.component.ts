@@ -521,7 +521,7 @@ export class DashboardComponent implements OnInit {
     this.selectedChannel = ['All', ...this.uniqueChannels];
     this.selectedDestination = ['All', ...this.uniqueDestinations];
     this.selectedCurrency = ['All', ...this.uniqueCurrencies];
-    this.selectedDateRange = 'currentmonth';
+    this.selectedDateRange = 'Date Range';
 
     this.filterData(); // Re-apply filter with default values
   }
@@ -581,10 +581,6 @@ export class DashboardComponent implements OnInit {
           this.uniqueNetworks.filter((item) => item !== 'All').length
         ) {
           this.selectedNetwork = ['All', ...this.uniqueNetworks];
-        } else {
-          this.selectedNetwork = this.selectedNetwork.filter(
-            (item) => item !== 'All'
-          );
         }
         break;
       case 'Channels':
@@ -595,10 +591,6 @@ export class DashboardComponent implements OnInit {
           this.uniqueChannels.filter((item) => item !== 'All').length
         ) {
           this.selectedChannel = ['All', ...this.uniqueChannels];
-        } else {
-          this.selectedChannel = this.selectedChannel.filter(
-            (item) => item !== 'All'
-          );
         }
         break;
       case 'Destinations':
@@ -609,10 +601,6 @@ export class DashboardComponent implements OnInit {
           this.uniqueDestinations.filter((item) => item !== 'All').length
         ) {
           this.selectedDestination = ['All', ...this.uniqueDestinations];
-        } else {
-          this.selectedDestination = this.selectedDestination.filter(
-            (item) => item !== 'All'
-          );
         }
         break;
       case 'Currency':
@@ -623,10 +611,6 @@ export class DashboardComponent implements OnInit {
           this.uniqueCurrencies.filter((item) => item !== 'All').length
         ) {
           this.selectedCurrency = ['All', ...this.uniqueCurrencies];
-        } else {
-          this.selectedCurrency = this.selectedCurrency.filter(
-            (item) => item !== 'All'
-          );
         }
         break;
     }
