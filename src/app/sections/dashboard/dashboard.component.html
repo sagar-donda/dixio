@@ -1,0 +1,735 @@
+<div class="dashboard-container">
+  <div class="header mb-4">
+    <!-- <h1>Dashboard</h1> -->
+    <!-- Add filter components or buttons here -->
+    <!-- app.component.html -->
+    <div class="flex items-center space-x-4 px-6 py-4 bg-white justify-between">
+      <!-- Dashboard Title -->
+      <h2 class="text-xl font-semibold text-gray-800 w-1/5">Dashboard</h2>
+
+      <!-- Vertical Divider -->
+      <div class="h-6 border-l border-gray-300 mx-4"></div>
+
+      <!-- Filters Button -->
+      <button
+        mat-button
+        class="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none matbutton"
+      >
+        <mat-icon class="matbutton w-4 h-4">tune</mat-icon>
+        <span class="matbutton text-lg font-semibold">Filters</span>
+      </button>
+
+      <!-- Select Fields -->
+      <div class="flex space-x-4">
+        <!-- Networks Select -->
+        <mat-form-field appearance="outline" class="w-36 small-select">
+          <mat-select
+            placeholder="Networks"
+            [(ngModel)]="selectedNetwork"
+            (selectionChange)="onSelectionChange('networks')"
+            multiple
+          >
+            <!-- Custom label using mat-select-trigger to display a static label -->
+            <mat-select-trigger> Networks </mat-select-trigger>
+
+            <!-- "All" Option -->
+            <mat-option class="w-full">
+              <div class="flex justify-between items-center w-full">
+                <span>All</span>
+                <mat-checkbox
+                  [checked]="isAllSelected('networks')"
+                  (change)="toggleAllSelection('networks', $event.checked)"
+                ></mat-checkbox>
+              </div>
+            </mat-option>
+
+            <!-- Individual Network Options -->
+            <mat-option
+              *ngFor="let network of uniqueNetworks"
+              [value]="network"
+            >
+              <div class="flex justify-between items-center w-full">
+                <span>{{ network }}</span>
+                <mat-checkbox
+                  [checked]="selectedNetwork.includes(network)"
+                ></mat-checkbox>
+              </div>
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Channels Select -->
+        <mat-form-field appearance="outline" class="w-36 small-select">
+          <mat-select
+            placeholder="Channels"
+            [(ngModel)]="selectedChannel"
+            (selectionChange)="onSelectionChange('channels')"
+            multiple
+          >
+            <!-- Custom label using mat-select-trigger to display a static label -->
+            <mat-select-trigger> Channels </mat-select-trigger>
+
+            <mat-option>
+              <div class="flex justify-between items-center w-full">
+                <span>All</span>
+                <mat-checkbox
+                  [checked]="isAllSelected('channels')"
+                  (change)="toggleAllSelection('channels', $event.checked)"
+                ></mat-checkbox>
+              </div>
+            </mat-option>
+            <mat-option
+              *ngFor="let channel of uniqueChannels"
+              [value]="channel"
+            >
+              <div class="flex justify-between items-center w-full">
+                <span>{{ channel }}</span>
+                <mat-checkbox
+                  [checked]="selectedChannel.includes(channel)"
+                ></mat-checkbox>
+              </div>
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Date Range Select (Single Select) -->
+        <mat-form-field appearance="outline" class="w-36 small-select">
+          <mat-select
+            placeholder="Date Range"
+            [(ngModel)]="selectedDateRange"
+            (selectionChange)="filterData()"
+          >
+            <mat-option value="Date Range">Date Range</mat-option>
+            <mat-option value="sep">Sep</mat-option>
+            <mat-option value="aug">Aug</mat-option>
+            <mat-option value="month">This Month</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Destinations Select -->
+        <mat-form-field appearance="outline" class="w-36 small-select">
+          <mat-select
+            placeholder="Destinations"
+            [(ngModel)]="selectedDestination"
+            (selectionChange)="onSelectionChange('destinations')"
+            multiple
+          >
+            <!-- Custom label using mat-select-trigger to display a static label -->
+            <mat-select-trigger> Destinations </mat-select-trigger>
+
+            <mat-option>
+              <div class="flex justify-between items-center w-full">
+                <span>All</span>
+                <mat-checkbox
+                  [checked]="isAllSelected('destinations')"
+                  (change)="toggleAllSelection('destinations', $event.checked)"
+                ></mat-checkbox>
+              </div>
+            </mat-option>
+            <mat-option
+              *ngFor="let destination of uniqueDestinations"
+              [value]="destination"
+            >
+              <div class="flex justify-between items-center w-full">
+                <span>{{ destination }}</span>
+                <mat-checkbox
+                  [checked]="selectedDestination.includes(destination)"
+                ></mat-checkbox>
+              </div>
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Currency Select -->
+        <mat-form-field appearance="outline" class="w-36 small-select">
+          <mat-select
+            placeholder="Currency"
+            [(ngModel)]="selectedCurrency"
+            (selectionChange)="onSelectionChange('currencies')"
+            multiple
+          >
+            <!-- Custom label using mat-select-trigger to display a static label -->
+            <mat-select-trigger> Currency </mat-select-trigger>
+
+            <mat-option>
+              <div class="flex justify-between items-center w-full">
+                <span>All</span>
+                <mat-checkbox
+                  [checked]="isAllSelected('currencies')"
+                  (change)="toggleAllSelection('currencies', $event.checked)"
+                ></mat-checkbox>
+              </div>
+            </mat-option>
+            <mat-option
+              *ngFor="let currency of uniqueCurrencies"
+              [value]="currency"
+            >
+              <div class="flex justify-between items-center w-full">
+                <span>{{ currency }}</span>
+                <mat-checkbox
+                  [checked]="selectedCurrency.includes(currency)"
+                ></mat-checkbox>
+              </div>
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Clear Button -->
+      <!-- Clear Button -->
+      <button
+        mat-raised-button
+        color="primary"
+        class="ml-4 clear font-bold"
+        (click)="clearFilters()"
+      >
+        Clear
+      </button>
+    </div>
+  </div>
+  <div class="mb-4 px-6 flex justify-between">
+    <!-- <h1>Dashboard</h1> -->
+    <!-- Add filter components or buttons here -->
+    <mat-button-toggle-group
+      class="custom-toggle-group"
+      appearance="legacy"
+      [(ngModel)]="selectedTab"
+    >
+      <mat-button-toggle
+        value="snapshot"
+        class="custom-toggle custom-border custom-toggle-border"
+        >Snapshot</mat-button-toggle
+      >
+      <mat-button-toggle
+        value="time-evolution"
+        class="custom-toggle custom-border custom-toggle-border"
+        >Time Evolution</mat-button-toggle
+      >
+      <mat-button-toggle
+        value="map"
+        class="custom-toggle custom-border custom-toggle-border"
+        >Map</mat-button-toggle
+      >
+      <mat-button-toggle value="performance" class="custom-toggle"
+        >Performance</mat-button-toggle
+      >
+    </mat-button-toggle-group>
+    <div>
+      <input
+        hidden
+        type="file"
+        (change)="onFileChange($event)"
+        accept=".xlsx, .xls, .csv"
+        #fileInput
+      />
+      <button mat-raised-button color="primary" (click)="fileInput.click()">
+        <mat-icon>upload_file</mat-icon> Import
+      </button>
+    </div>
+  </div>
+  <div class="stats-overview">
+    <ng-container *ngIf="selectedTab !== 'performance'; else defaultkipbox">
+      <div
+        class="grid grid-cols-5 justify-items-center chart_border bg-white items-center gap-4 py-6 mx-6 rounded-xl divide-x"
+      >
+        <div class="lg:px-4 w-full flex flex-col gap-0">
+          <div class="flex items-center justify-between">
+            <div class="2xl:text-3xl text-xl font-bold family">
+              {{ nooftransaction }}
+            </div>
+            <div class="flex items-center rounded-full boxshadow">
+              <svg
+                width="25"
+                height="25"
+                viewBox="0 0 25 25"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M21.0889 6.08203H10.0889C6.37559 6.08203 3.58887 8.76706 3.58887 12.582"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M4.08887 19.082H15.0889C18.8021 19.082 21.5889 16.397 21.5889 12.582"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M19.0889 3.58203C19.0889 3.58203 21.5889 5.42325 21.5889 6.08205C21.5889 6.74085 19.0889 8.58203 19.0889 8.58203"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M6.08885 16.582C6.08885 16.582 3.58887 18.4233 3.58887 19.0821C3.58886 19.7408 6.08887 21.582 6.08887 21.582"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+          </div>
+          <div class="transaction"># of Transactions</div>
+          <!-- <div class="flex items-center text-green-500 mt-2">
+            <span class="bet family">+0%</span>
+            <span class="since">Since last month</span>
+          </div> -->
+        </div>
+
+        <div class="lg:px-4 w-full flex flex-col gap-0">
+          <div class="flex items-center justify-between">
+            <div class="2xl:text-3xl text-xl font-bold family">
+              ${{ formatValue(totalusdamount) }}
+            </div>
+            <div class="flex items-center rounded-full">
+              <svg
+                width="25"
+                height="25"
+                viewBox="0 0 25 25"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M18.6086 8.73018C18.6086 6.43922 15.7357 4.58203 12.1919 4.58203C8.64807 4.58203 5.77523 6.43922 5.77523 8.73018C5.77523 11.0211 7.52523 12.2857 12.1919 12.2857C16.8586 12.2857 19.1919 13.4709 19.1919 16.4339C19.1919 19.3968 16.0579 20.582 12.1919 20.582C8.3259 20.582 5.19189 18.7248 5.19189 16.4339"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+                <path
+                  d="M12.1919 2.58203V22.582"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+          </div>
+          <div class="transaction">Total Value</div>
+          <!-- <div class="flex items-center text-green-500 mt-2">
+            <span class="bet-two family">-0%</span>
+            <span class="since">Since last month</span>
+          </div> -->
+        </div>
+
+        <div class="lg:px-4 w-full flex flex-col gap-0">
+          <div class="flex items-center justify-between">
+            <div class="2xl:text-3xl text-xl font-bold family">
+              ${{ formatValue(totalusdamount / nooftransaction) }}
+            </div>
+            <div class="flex items-center rounded-full">
+              <svg
+                width="25"
+                height="25"
+                viewBox="0 0 25 25"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M15.2944 12.5822C15.2944 13.9629 14.1751 15.0822 12.7944 15.0822C11.4137 15.0822 10.2944 13.9629 10.2944 12.5822C10.2944 11.2014 11.4137 10.0822 12.7944 10.0822C14.1751 10.0822 15.2944 11.2014 15.2944 12.5822Z"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                />
+                <path
+                  d="M19.7944 11.7236C19.4693 11.6765 19.1355 11.6406 18.7944 11.6167M6.79443 13.5474C6.4534 13.5235 6.11955 13.4876 5.79443 13.4406"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M12.7944 20.082C11.4619 20.7044 9.7115 21.082 7.79443 21.082C6.72851 21.082 5.71412 20.9653 4.79443 20.7546C3.29401 20.411 2.79443 19.5084 2.79443 17.9681V7.196C2.79443 6.21117 3.83446 5.53476 4.79443 5.75463C5.71412 5.96528 6.72851 6.08203 7.79443 6.08203C9.7115 6.08203 11.4619 5.70439 12.7944 5.08203C14.127 4.45967 15.8774 4.08203 17.7944 4.08203C18.8604 4.08203 19.8747 4.19878 20.7944 4.40943C22.3762 4.77171 22.7944 5.70239 22.7944 7.196V17.9681C22.7944 18.9529 21.7544 19.6293 20.7944 19.4094C19.8747 19.1988 18.8604 19.082 17.7944 19.082C15.8774 19.082 14.127 19.4597 12.7944 20.082Z"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                />
+              </svg>
+            </div>
+          </div>
+          <div class="transaction">Avg. Transaction Value</div>
+          <!-- <div class="flex items-center text-green-500 mt-2">
+            <span class="bet-two family">-0%</span>
+            <span class="since">Since last month</span>
+          </div> -->
+        </div>
+
+        <div class="lg:px-4 w-full flex flex-col gap-0">
+          <div class="flex items-center justify-between">
+            <div class="2xl:text-3xl text-xl font-bold family">
+              ${{ formatValue(totalusdFeesInUsd / nooftransaction) }}
+            </div>
+            <div class="flex items-center rounded-full">
+              <mat-icon>payments</mat-icon>
+            </div>
+          </div>
+          <div class="transaction">Avg Transactions Fees</div>
+          <!-- <div class="flex items-center text-green-500 mt-2">
+            <span class="bet family">+0%</span>
+            <span class="since">Since last month</span>
+          </div> -->
+        </div>
+
+        <div class="lg:px-4 w-full flex flex-col gap-0">
+          <div class="flex items-center justify-between">
+            <div class="2xl:text-3xl text-xl font-bold family">
+              ${{ formatValue(totalusdFeesInUsd) }}
+            </div>
+            <div class="flex items-center rounded-full">
+              <svg
+                width="24"
+                height="25"
+                viewBox="0 0 24 25"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M18.0405 14.132C17.6205 14.542 17.3805 15.132 17.4405 15.762C17.5305 16.842 18.5205 17.632 19.6005 17.632H21.5005V18.822C21.5005 20.892 19.8105 22.582 17.7405 22.582H6.26049C4.19049 22.582 2.50049 20.892 2.50049 18.822V12.092C2.50049 10.022 4.19049 8.33203 6.26049 8.33203H17.7405C19.8105 8.33203 21.5005 10.022 21.5005 12.092V13.532H19.4805C18.9205 13.532 18.4105 13.752 18.0405 14.132Z"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M2.50049 12.9921V8.42214C2.50049 7.23214 3.23049 6.17209 4.34049 5.75209L12.2805 2.75209C13.5205 2.28209 14.8505 3.20212 14.8505 4.53212V8.33211"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M22.5593 14.5522V16.6122C22.5593 17.1622 22.1193 17.6122 21.5593 17.6322H19.5993C18.5193 17.6322 17.5293 16.8422 17.4393 15.7622C17.3793 15.1322 17.6193 14.5422 18.0393 14.1322C18.4093 13.7522 18.9193 13.5322 19.4793 13.5322H21.5593C22.1193 13.5522 22.5593 14.0022 22.5593 14.5522Z"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M7.00049 12.582H14.0005"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+          </div>
+          <div class="transaction">Total Fees Paid</div>
+          <!-- <div class="flex items-center text-green-500 mt-2">
+            <span class="bet family">+0%</span>
+            <span class="since">Since last month</span>
+          </div> -->
+        </div>
+      </div>
+    </ng-container>
+    <ng-template #defaultkipbox>
+      <div
+        class="grid grid-cols-5 justify-items-center chart_border bg-white items-center gap-4 py-6 mx-6 rounded-xl divide-x"
+      >
+        <div class="lg:px-4 w-full flex flex-col gap-0">
+          <div class="flex items-center justify-between">
+            <div class="2xl:text-3xl text-xl font-bold family">
+              {{ avgtimcompletion }}
+            </div>
+            <div class="flex items-center rounded-full boxshadow">
+              <svg
+                width="25"
+                height="25"
+                viewBox="0 0 25 25"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12.5889 8.58203V12.582L15.0889 15.082"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M6.19301 6.18629L5.66268 5.65596V5.65596L6.19301 6.18629ZM4.92663 7.45267L4.17664 7.45644C4.1787 7.86771 4.51159 8.2006 4.92286 8.20266L4.92663 7.45267ZM7.46841 8.21546C7.88262 8.21754 8.22009 7.88344 8.22217 7.46924C8.22425 7.05503 7.89016 6.71756 7.47595 6.71548L7.46841 8.21546ZM5.66383 4.90335C5.66174 4.48914 5.32428 4.15505 4.91007 4.15713C4.49586 4.15921 4.16176 4.49668 4.16385 4.91089L5.66383 4.90335ZM4.41547 11.3671C4.47172 10.9567 4.18465 10.5784 3.77427 10.5222C3.36389 10.4659 2.98562 10.753 2.92937 11.1634L4.41547 11.3671ZM19.4511 5.71992C15.6309 1.89973 9.4576 1.86105 5.66268 5.65596L6.72334 6.71662C9.92245 3.51752 15.146 3.5361 18.3904 6.78058L19.4511 5.71992ZM5.72664 19.4444C9.54683 23.2646 15.7201 23.3033 19.5151 19.5083L18.4544 18.4477C15.2553 21.6468 10.0318 21.6282 6.7873 18.3837L5.72664 19.4444ZM19.5151 19.5083C23.31 15.7134 23.2713 9.54011 19.4511 5.71992L18.3904 6.78058C21.6349 10.0251 21.6535 15.2486 18.4544 18.4477L19.5151 19.5083ZM5.66268 5.65596L4.3963 6.92234L5.45696 7.983L6.72334 6.71662L5.66268 5.65596ZM4.92286 8.20266L7.46841 8.21546L7.47595 6.71548L4.9304 6.70268L4.92286 8.20266ZM5.67662 7.4489L5.66383 4.90335L4.16385 4.91089L4.17664 7.45644L5.67662 7.4489ZM2.92937 11.1634C2.52794 14.0921 3.46279 17.1805 5.72664 19.4444L6.7873 18.3837C4.86672 16.4631 4.0755 13.8474 4.41547 11.3671L2.92937 11.1634Z"
+                  fill="#37363B"
+                />
+              </svg>
+            </div>
+          </div>
+          <div class="transaction text-sm mt-2">Avg. Time to Complete</div>
+          <!-- <div class="flex items-center text-green-500 mt-2">
+          <span class="bet family">+0%</span>
+          <span class="since">Since last month</span>
+        </div> -->
+        </div>
+
+        <div class="lg:px-4 w-full flex flex-col gap-0">
+          <div class="flex items-center justify-between">
+            <div class="2xl:text-3xl text-xl font-bold family">
+              {{ avgsptrate }}%
+            </div>
+            <div class="flex items-center rounded-full">
+              <svg
+                width="25"
+                height="25"
+                viewBox="0 0 25 25"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M9.19141 2.58203H15.1914C20.1914 2.58203 22.1914 4.58203 22.1914 9.58203V15.582C22.1914 20.582 20.1914 22.582 15.1914 22.582H9.19141C4.19141 22.582 2.19141 20.582 2.19141 15.582V9.58203C2.19141 4.58203 4.19141 2.58203 9.19141 2.58203Z"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M8.76172 15.852L15.3017 9.31201"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M9.17142 10.9521C9.85073 10.9521 10.4014 10.4014 10.4014 9.72208C10.4014 9.04277 9.85073 8.49207 9.17142 8.49207C8.49211 8.49207 7.94141 9.04277 7.94141 9.72208C7.94141 10.4014 8.49211 10.9521 9.17142 10.9521Z"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M15.7114 16.672C16.3907 16.672 16.9414 16.1213 16.9414 15.442C16.9414 14.7627 16.3907 14.212 15.7114 14.212C15.0321 14.212 14.4814 14.7627 14.4814 15.442C14.4814 16.1213 15.0321 16.672 15.7114 16.672Z"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+          </div>
+          <div class="transaction mt-2">Average STP Rate</div>
+          <!-- <div class="flex items-center text-green-500 mt-2">
+          <span class="bet-two family">-0%</span>
+          <span class="since">Since last month</span>
+        </div> -->
+        </div>
+
+        <div class="lg:px-4 w-full flex flex-col gap-0">
+          <div class="flex items-center justify-between">
+            <div class="2xl:text-3xl text-xl font-bold family">
+              ${{ formatValue(avgfeepertransaction) }}
+            </div>
+            <div class="flex items-center rounded-full">
+              <svg
+                width="25"
+                height="25"
+                viewBox="0 0 25 25"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M15.2949 12.5822C15.2949 13.9629 14.1756 15.0822 12.7949 15.0822C11.4142 15.0822 10.2949 13.9629 10.2949 12.5822C10.2949 11.2014 11.4142 10.0822 12.7949 10.0822C14.1756 10.0822 15.2949 11.2014 15.2949 12.5822Z"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                />
+                <path
+                  d="M19.7949 11.7236C19.4698 11.6765 19.136 11.6406 18.7949 11.6167M6.79492 13.5474C6.45389 13.5235 6.12004 13.4876 5.79492 13.4406"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M12.7949 20.082C11.4624 20.7044 9.71199 21.082 7.79492 21.082C6.729 21.082 5.71461 20.9653 4.79492 20.7546C3.2945 20.411 2.79492 19.5084 2.79492 17.9681V7.196C2.79492 6.21117 3.83495 5.53476 4.79492 5.75463C5.71461 5.96528 6.729 6.08203 7.79492 6.08203C9.71199 6.08203 11.4624 5.70439 12.7949 5.08203C14.1275 4.45967 15.8779 4.08203 17.7949 4.08203C18.8608 4.08203 19.8752 4.19878 20.7949 4.40943C22.3766 4.77171 22.7949 5.70239 22.7949 7.196V17.9681C22.7949 18.9529 21.7549 19.6293 20.7949 19.4094C19.8752 19.1988 18.8608 19.082 17.7949 19.082C15.8779 19.082 14.1275 19.4597 12.7949 20.082Z"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                />
+              </svg>
+            </div>
+          </div>
+          <div class="transaction text-sm mt-2">Avg. Fee Per Transaction</div>
+          <!-- <div class="flex items-center text-green-500 mt-2">
+          <span class="bet-two family">-0%</span>
+          <span class="since">Since last month</span>
+        </div> -->
+        </div>
+
+        <div class="lg:px-4 w-full flex flex-col gap-0">
+          <div class="flex items-center justify-between">
+            <div class="2xl:text-3xl text-xl font-bold family">
+              ${{ formatValue(minimumfeepertransaction) }}
+            </div>
+            <div class="flex items-center rounded-full">
+              <svg
+                width="25"
+                height="25"
+                viewBox="0 0 25 25"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M15.2949 12.5822C15.2949 13.9629 14.1756 15.0822 12.7949 15.0822C11.4142 15.0822 10.2949 13.9629 10.2949 12.5822C10.2949 11.2014 11.4142 10.0822 12.7949 10.0822C14.1756 10.0822 15.2949 11.2014 15.2949 12.5822Z"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                />
+                <path
+                  d="M19.7949 11.7236C19.4698 11.6765 19.136 11.6406 18.7949 11.6167M6.79492 13.5474C6.45389 13.5235 6.12004 13.4876 5.79492 13.4406"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M12.7949 20.082C11.4624 20.7044 9.71199 21.082 7.79492 21.082C6.729 21.082 5.71461 20.9653 4.79492 20.7546C3.2945 20.411 2.79492 19.5084 2.79492 17.9681V7.196C2.79492 6.21117 3.83495 5.53476 4.79492 5.75463C5.71461 5.96528 6.729 6.08203 7.79492 6.08203C9.71199 6.08203 11.4624 5.70439 12.7949 5.08203C14.1275 4.45967 15.8779 4.08203 17.7949 4.08203C18.8608 4.08203 19.8752 4.19878 20.7949 4.40943C22.3766 4.77171 22.7949 5.70239 22.7949 7.196V17.9681C22.7949 18.9529 21.7549 19.6293 20.7949 19.4094C19.8752 19.1988 18.8608 19.082 17.7949 19.082C15.8779 19.082 14.1275 19.4597 12.7949 20.082Z"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                />
+              </svg>
+            </div>
+          </div>
+          <div class="transaction text-sm mt-2">Min Fee per Transaction</div>
+          <!-- <div class="flex items-center text-green-500 mt-2">
+          <span class="bet family">+0%</span>
+          <span class="since">Since last month</span>
+        </div> -->
+        </div>
+
+        <div class="lg:px-4 w-full flex flex-col gap-0">
+          <div class="flex items-center justify-between">
+            <div class="2xl:text-3xl text-xl font-bold family">
+              ${{ formatValue(maximumfeepertransaction) }}
+            </div>
+            <div class="flex items-center rounded-full">
+              <svg
+                width="25"
+                height="25"
+                viewBox="0 0 25 25"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M15.2949 12.5822C15.2949 13.9629 14.1756 15.0822 12.7949 15.0822C11.4142 15.0822 10.2949 13.9629 10.2949 12.5822C10.2949 11.2014 11.4142 10.0822 12.7949 10.0822C14.1756 10.0822 15.2949 11.2014 15.2949 12.5822Z"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                />
+                <path
+                  d="M19.7949 11.7236C19.4698 11.6765 19.136 11.6406 18.7949 11.6167M6.79492 13.5474C6.45389 13.5235 6.12004 13.4876 5.79492 13.4406"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M12.7949 20.082C11.4624 20.7044 9.71199 21.082 7.79492 21.082C6.729 21.082 5.71461 20.9653 4.79492 20.7546C3.2945 20.411 2.79492 19.5084 2.79492 17.9681V7.196C2.79492 6.21117 3.83495 5.53476 4.79492 5.75463C5.71461 5.96528 6.729 6.08203 7.79492 6.08203C9.71199 6.08203 11.4624 5.70439 12.7949 5.08203C14.1275 4.45967 15.8779 4.08203 17.7949 4.08203C18.8608 4.08203 19.8752 4.19878 20.7949 4.40943C22.3766 4.77171 22.7949 5.70239 22.7949 7.196V17.9681C22.7949 18.9529 21.7549 19.6293 20.7949 19.4094C19.8752 19.1988 18.8608 19.082 17.7949 19.082C15.8779 19.082 14.1275 19.4597 12.7949 20.082Z"
+                  stroke="#37363B"
+                  stroke-width="1.5"
+                />
+              </svg>
+            </div>
+          </div>
+          <div class="transaction mt-2">Max Fee per Transaction</div>
+          <!-- <div class="flex items-center text-green-500 mt-2">
+          <span class="bet family">+0%</span>
+          <span class="since">Since last month</span>
+        </div> -->
+        </div>
+      </div>
+    </ng-template>
+    <div class="chartlist mx-6">
+      <div class="flex flex-wrap mt-4">
+        <div
+          *ngFor="let options of chartOptionsArray; let i = index"
+          class="w-full mb-4"
+          [ngClass]="{
+            'lg:w-1/2': chartOptionsArray.length > 1,
+            'lg:pr-2': (i + 1) % 2 !== 0,
+            'lg:pl-2': (i + 1) % 2 === 0
+          }"
+        >
+          <div
+            class="p-4 bg-white rounded-lg flex flex-col border chart_border"
+          >
+            <!-- First Row: Title -->
+            <div class="w-full text-xl font-bold chart_title">
+              {{ chartDataArray[i]?.title }}
+            </div>
+
+            <!-- Second Row: Chart and Legend -->
+            <div class="flex flex-col lg:flex-row w-full">
+              <!-- Highcharts Chart -->
+              <div
+                class="w-full"
+                [ngClass]="{ 'lg:w-full w-1/2': selectedTab === 'snapshot' }"
+              >
+                <div *ngIf="selectedTab === 'map'; else defaultChart">
+                  <highcharts-chart
+                    #chartContainer
+                    [Highcharts]="Highcharts"
+                    [options]="options"
+                    [constructorType]="chartConstructor"
+                    style="width: 100%; height: 800px; display: block"
+                  >
+                  </highcharts-chart>
+                </div>
+
+                <ng-template #defaultChart>
+                  <highcharts-chart
+                    #chartContainer
+                    [Highcharts]="Highcharts"
+                    [options]="options"
+                    style="width: 100%; height: 400px; display: block"
+                  >
+                  </highcharts-chart>
+                </ng-template>
+              </div>
+
+              <!-- Legend Container -->
+              <div
+                *ngIf="selectedTab === 'snapshot'"
+                class="width-item flex items-center justify-center"
+              >
+                <div class="legend-container mt-4 lg:mt-0 lg:ml-4">
+                  <table class="w-full">
+                    <tbody>
+                      <tr
+                        *ngFor="let item of chartDataArray[i]?.data"
+                        class="legend-item mb-2"
+                      >
+                        <td class="flex items-center" style="width: 35%">
+                          <div
+                            class="color-dot w-3 h-3 rounded-full mr-2"
+                            [ngStyle]="{ 'background-color': item.color }"
+                          ></div>
+                          <span class="label font-medium">{{ item.name }}</span>
+                        </td>
+                        <td
+                          class="font-normal text-center currency family label"
+                          style="width: 45%"
+                        >
+                          {{
+                            i % 2 === 0
+                              ? (item.value
+                                | currency : "USD" : "symbol" : "1.0-0")
+                              : item.value
+                          }}
+                        </td>
+                        <td
+                          class="text-gray-500 text-right currency family label"
+                          style="width: 20%"
+                        >
+                          {{ item.percentage }}%
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

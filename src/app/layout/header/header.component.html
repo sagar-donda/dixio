@@ -1,0 +1,45 @@
+<!-- header.component.html -->
+<mat-toolbar>
+  <mat-toolbar-row class="header-row">
+    <div class="search-container">
+      <mat-icon>search</mat-icon>
+      <input matInput placeholder="Search anything here..." />
+    </div>
+
+    <!-- <div class="profile-container">
+    </div> -->
+    <!-- <app-dropdown></app-dropdown> -->
+    <!-- profile-menu.component.html -->
+    <button
+      class="grid grid-cols-[auto,1fr,auto] items-center w-full p-2 bg-white rounded-lg cursor-pointer focus:outline-none profile-container"
+      (click)="toggleMenu()"
+      style="width: 200px"
+    >
+      <!-- Avatar Section -->
+      <div class="flex items-center justify-center font-semibold eb">EB</div>
+
+      <!-- User Name -->
+      <span class="text-sm">Elvin Bond</span>
+
+      <button
+        mat-icon-button
+        [matMenuTriggerFor]="menu"
+        class="profile-button"
+        (click)="toggleMenu()"
+        (menuOpened)="onMenuOpened()"
+        (menuClosed)="onMenuClosed()"
+      >
+        <!-- Dropdown Arrow Icon -->
+        <mat-icon>
+          {{ isMenuOpen ? "keyboard_arrow_up" : "keyboard_arrow_down" }}
+        </mat-icon>
+      </button>
+      <!-- Dropdown Menu -->
+      <mat-menu #menu="matMenu" [hasBackdrop]="false">
+        <button mat-menu-item>Profile</button>
+        <button mat-menu-item>Settings</button>
+        <button mat-menu-item>Logout</button>
+      </mat-menu>
+    </button>
+  </mat-toolbar-row>
+</mat-toolbar>

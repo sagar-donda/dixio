@@ -1,0 +1,25 @@
+<mat-sidenav-container class="app-container">
+  <mat-sidenav mode="side" opened class="sidenav">
+    <mat-nav-list>
+      <div class="logo">
+        <a mat-fab extended routerLink="/dashboard" class="logo-button">
+          <img [src]="logoPath" alt="Logo" class="logo-image" />
+        </a>
+      </div>
+      <div class="border_dash"></div>
+      <div class="example-button-container">
+        <a mat-fab extended routerLink="/dashboard">
+          <div class="nav-content">
+            <mat-icon>grid_view</mat-icon>
+            <span>Dashboard</span>
+          </div>
+        </a>
+      </div>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <app-header></app-header>
+    <router-outlet></router-outlet>
+  </mat-sidenav-content>
+</mat-sidenav-container>

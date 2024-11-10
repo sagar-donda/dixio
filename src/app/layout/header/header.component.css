@@ -1,0 +1,90 @@
+/* header.component.css */
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+  border-bottom: 1px solid rgba(212, 216, 224, 1);
+}
+
+.search-container {
+  gap: 12px;
+  display: flex;
+  align-items: center;
+  color: #7D8596;
+}
+
+
+
+.search-container input {
+  border: none;
+  outline: none;
+  font-size: 16px;
+  color: #7D8596;
+  font-weight: 400;
+}
+
+.profile-container {
+  display: flex;
+  
+  background-color: #FFFFFF;
+  border-radius: 10px;
+  padding: 4px 10px 4px 4px;
+  cursor: pointer;
+  color: #212121;
+  box-shadow: 0px 20px 40px 0px rgba(122, 137, 254, 0.05);
+  border: 1px solid rgba(212, 216, 224, 1)
+ 
+
+}
+
+.profile-button {
+    margin-left: 10px;
+}
+
+.profile-initials {
+  width: 32px;
+  height: 32px;
+  background-color: #d1c4e9;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  color: black;
+  margin-right: 8px;
+}
+
+.profile-name {
+  font-size: 14px;
+  margin-right: 4px;
+}
+
+.example-additional-selection {
+  opacity: 0.75;
+  font-size: 0.75em;
+  line-height: 1;
+}
+
+::ng-deep .mat-mdc-menu-panel {
+  background-color: white !important; /* Set the background color to white */
+  border-radius: 8px; /* Optional: add rounded corners */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Optional: add subtle shadow */
+  color: black; /* Optional: set the text color */
+  margin-top: 9px;
+}
+
+.eb {
+      font-size: 17px;
+      color: #37363B;
+      border-radius: 7px;
+     padding: 9px 13px 9px 13px;
+      
+      background-color: #D6CBFB;
+      gap: 5px;
+      margin-right: 6px;
+}
+
+.mat-toolbar-row, .mat-toolbar-single-row  {
+  padding: 37px 15px 37px 15px !important;
+}

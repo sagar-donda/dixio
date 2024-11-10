@@ -1,0 +1,284 @@
+.chartlist {
+  margin-top: 10px !important;
+}
+.legend-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 300px; /* Adjust as needed */
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+}
+
+.color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.label {
+  flex: 1;
+}
+.label {
+  font-size: 10px !important;
+}
+
+@media screen and (min-width: 1536px) {
+  .label {
+    font-size: 14px !important; /* !important to override inline styles */
+  }
+}
+.value {
+  font-size: 14px;
+}
+
+.percentage {
+  font-size: 14px;
+  color: gray;
+}
+
+.custom-toggle-group {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.custom-toggle-group {
+  box-shadow: none !important;
+}
+.custom-toggle {
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: none;
+  padding: 10px 32px 10px 32px;
+}
+
+.custom-toggle-border {
+  border-right: 1px solid rgba(17, 115, 188, 1);
+}
+
+.custom-toggle.mat-button-toggle-checked {
+  background-color: #1173bc;
+  color: white;
+}
+
+.custom-toggle:not(.mat-button-toggle-checked) {
+  background-color: white;
+  color: #37363b;
+}
+.custom-border {
+  border-right: 1px solid rgba(208, 213, 221, 1);
+}
+
+/* app.component.css */
+.small-select .mat-form-field-wrapper {
+  padding-bottom: 0 !important; /* Remove extra padding */
+}
+
+.small-select .mat-select-trigger {
+  height: 1.8rem; /* Set a smaller height */
+  line-height: 1.8rem; /* Ensure text is vertically centered */
+}
+
+.small-select .mat-form-field-flex {
+  height: 1.8rem; /* Set height for the form field */
+}
+
+.small-select .mat-select-arrow {
+  font-size: 1rem; /* Adjust icon size if needed */
+}
+.header {
+  border-bottom: 1px solid rgba(212, 216, 224, 1);
+}
+.matbutton {
+  color: rgba(55, 54, 59, 1);
+}
+
+.mat-mdc-select-min-line {
+  color: #37363b !important;
+  font-weight: 500;
+  font-size: 14px;
+}
+::ng-deep .mat-button-toggle .mat-button-toggle-label-content {
+  padding: 0 !important;
+}
+::ng-deep .mat-pseudo-checkbox {
+  display: none !important;
+}
+.dashboard-container {
+  background-color: #faf9fc !important;
+}
+
+::ng-deep .twoitems {
+  justify-content: space-between !important;
+}
+::ng-deep .transaction {
+  font-weight: 500 !important;
+  color: #37363b !important;
+}
+.transaction {
+  font-size: 14px !important;
+}
+
+@media screen and (min-width: 1536px) {
+  .transaction {
+    font-size: 16px !important; /* !important to override inline styles */
+  }
+}
+
+.bet {
+  color: #13bf9d;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+.bet {
+  font-size: 10px !important;
+}
+
+@media screen and (min-width: 1536px) {
+  .bet {
+    font-size: 14px !important; /* !important to override inline styles */
+  }
+}
+.since {
+  color: #9e9e9e !important;
+
+  font-weight: 500;
+  margin-left: 10px;
+}
+.since {
+  font-size: 10px !important;
+}
+
+@media screen and (min-width: 1536px) {
+  .since {
+    font-size: 14px !important; /* !important to override inline styles */
+  }
+}
+.bet-two {
+  color: #e2475d;
+
+  font-weight: 400 !important;
+}
+.bet-two {
+  font-size: 10px !important;
+}
+
+@media screen and (min-width: 1536px) {
+  .bet-two {
+    font-size: 14px !important; /* !important to override inline styles */
+  }
+}
+
+::ng-deep .family {
+  font-family: Oswald !important;
+}
+::ng-deep .clear {
+  padding: 10px 24px 10px 24px !important;
+  color: #ffffff !important;
+  background-color: #1173bc !important;
+  border-radius: 8px !important;
+  border: 1px !important;
+  font-size: 16px !important;
+}
+
+::ng-deep .mdc-notched-outline {
+  display: none !important;
+}
+.small-select {
+  border: 1px solid rgba(212, 216, 224, 1);
+  box-shadow: 0px 20px 40px 0px rgba(122, 137, 254, 0.05);
+
+  border-radius: 8px;
+
+  justify-content: space-between !important;
+}
+.chart_title {
+  color: #37363b !important;
+}
+.stats-overview {
+  gap: px;
+}
+
+::ng-deep .chart_border {
+  border: 1px solid rgba(212, 216, 224, 1) !important;
+}
+::ng-deep .label {
+  color: #37363b;
+}
+::ng-deep .highcharts-data-label-color-6 {
+  color: #37363b !important;
+}
+.currency {
+  color: #37363b !important;
+}
+::ng-deep div.mat-mdc-select-panel {
+  background: #ffffff !important;
+  box-shadow: 0px 4px 6px -2px rgba(16, 24, 40, 0.03) !important;
+
+  box-shadow: 0px 12px 16px -4px rgba(16, 24, 40, 0.08) !important;
+  border: 1px solid rgba(234, 236, 240, 1) !important;
+  border-radius: 8px !important;
+}
+
+::ng-deep .chart_border_seperated {
+  border-right: 1px solid rgba(224, 224, 224, 1) !important;
+}
+
+::ng-deep .highcharts-title {
+  display: none !important;
+}
+
+::ng-deep .highcharts-data-label-connector {
+  display: none !important;
+}
+
+::ng-deep .highcharts-data-label-color-1 {
+  display: none !important;
+}
+
+/* 
+::ng-deep .highcharts-color-0 {
+  display: none !important;
+}
+::ng-deep .highcharts-color-1 {
+  display: none !important;
+}
+::ng-deep .highcharts-color-2 {
+  display: none !important;
+}
+::ng-deep .highcharts-color-3 {
+  display: none !important;
+}
+::ng-deep .highcharts-color-4 {
+  display: none !important;
+}::ng-deep .highcharts-color-5 {
+  display: none !important;
+}::ng-deep .highcharts-color-6 {
+  display: none !important;
+} */
+
+::ng-deep .width-item {
+  width: 170px !important;
+}
+
+@media screen and (min-width: 1536px) {
+  ::ng-deep .width-item {
+    width: 350px !important;
+  }
+}
+
+@media (min-width: 1536px) {
+  ::ng-deep .lg\:space-x-10 > :not([hidden]) ~ :not([hidden]) {
+    margin-left: 40px !important;
+    margin-right: 40px !important;
+  }
+}
+
+::ng-deep .lg\:space-x-10 > :not([hidden]) ~ :not([hidden]) {
+  margin-left: 10px !important;
+  margin-right: 10px !important;
+}

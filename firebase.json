@@ -1,0 +1,10 @@
+{
+  "hosting": {
+    "public": "dist/dixio/browser",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}

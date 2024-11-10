@@ -1,0 +1,74 @@
+select-dropdown.component.html
+<div class="relative inline-block w-64 dropdown-container">
+  <!-- Customized Button -->
+  <button
+    class="grid grid-cols-[auto,1fr,auto] items-center w-full p-2 bg-white rounded-lg border cursor-pointer focus:outline-none"
+    (click)="toggleDropdown()"
+  >
+    <!-- Avatar Section -->
+    <div
+      class="h-8 p-1 mr-2 bg-purple-200 rounded-md flex items-center justify-center font-bold text-black"
+    >
+      EB
+    </div>
+
+    <!-- User Name -->
+    <span class="text-gray-800 text-left">Elvin Bond</span>
+
+    <!-- Dropdown Arrow Icon -->
+    <svg
+      class="w-4 h-4 text-gray-600 justify-self-end"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M19 9l-7 7-7-7"
+      ></path>
+    </svg>
+  </button>
+
+  <!-- Dropdown Menu -->
+  <div
+    *ngIf="dropdownOpen"
+    class="absolute mt-2 w-full bg-white rounded-md shadow-lg z-10"
+    [@dropdownAnimation]="dropdownOpen ? 'open' : 'closed'"
+  >
+    <ul class="py-1 text-gray-800">
+      <li
+        *ngFor="let option of options"
+        class="flex items-center justify-between px-4 py-2 text-sm cursor-pointer hover:bg-gray-100"
+        (click)="toggleSelection(option)"
+      >
+        <span>{{ option.name }}</span>
+        <span
+          class="w-6 h-6 flex items-center justify-center rounded-md"
+          [ngClass]="{
+            'bg-blue-500 text-white': option.selected,
+            'bg-gray-200 text-gray-600': !option.selected
+          }"
+        >
+          <svg
+            *ngIf="option.selected"
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            ></path>
+          </svg>
+        </span>
+      </li>
+    </ul>
+  </div>
+</div>
