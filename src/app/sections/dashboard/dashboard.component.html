@@ -31,18 +31,20 @@
           >
             <!-- Custom label using mat-select-trigger to display a static label -->
             <mat-select-trigger>
+              Networks :
               {{
-                selectedNetwork?.includes("All")
-                  ? "Networks : All"
-                  : "Networks : "
+                selectedNetwork.includes("All")
+                  ? "All"
+                  : selectedNetwork.length === 1
+                  ? selectedNetwork[0]
+                  : selectedNetwork.length === 2
+                  ? "2 selected"
+                  : selectedNetwork.length === 3
+                  ? "3 selected"
+                  : selectedNetwork.length >= 4
+                  ? "Multiple selected"
+                  : "Networks"
               }}
-              @if ((selectedNetwork?.length || 0) > 1 &&
-              (selectedNetwork?.length || 0) - 1 !== uniqueChannels.length) {
-              <span class="example-additional-selection">
-                {{ (selectedNetwork?.length || 0) - 1 }}
-                {{ selectedNetwork?.length === 2 ? "selected" : "selected" }}
-              </span>
-              }
             </mat-select-trigger>
             <!-- "All" Option -->
             <mat-option class="w-full">
@@ -79,18 +81,20 @@
             multiple
           >
             <mat-select-trigger>
+              Channels :
               {{
-                selectedChannel?.includes("All")
-                  ? "Channels : All"
-                  : "Channels : "
+                selectedChannel.includes("All")
+                  ? "All"
+                  : selectedChannel.length === 1
+                  ? selectedChannel[0]
+                  : selectedChannel.length === 2
+                  ? "2 selected"
+                  : selectedChannel.length === 3
+                  ? "3 selected"
+                  : selectedChannel.length >= 4
+                  ? "Multiple selected"
+                  : "Channels"
               }}
-              @if ((selectedChannel?.length || 0) > 1 &&
-              (selectedChannel?.length || 0) - 1 !== uniqueChannels.length) {
-              <span class="example-additional-selection">
-                {{ (selectedChannel?.length || 0) - 1 }}
-                {{ selectedChannel?.length === 2 ? "selected" : "selected" }}
-              </span>
-              }
             </mat-select-trigger>
             <mat-option>
               <div class="flex justify-between items-center w-full">
@@ -138,17 +142,20 @@
           >
             <!-- Custom label using mat-select-trigger to display a static label -->
             <mat-select-trigger>
-              {{selectedDestination?.includes('All') ? "Destinations : All" : "Destinations : " + selectedDestination?.[1]}}
-              @if ((selectedDestination?.length || 0) > 1 &&
-              (selectedDestination?.length || 0) - 1 !==
-              uniqueDestinations.length) {
-              <span class="example-additional-selection">
-                {{ (selectedDestination?.length || 0) - 1 }}
-                {{
-                  selectedDestination?.length === 2 ? "selected" : "selected"
-                }}
-              </span>
-              }
+              Destinations :
+              {{
+                selectedDestination.includes("All")
+                  ? "All"
+                  : selectedDestination.length === 1
+                  ? selectedDestination[0]
+                  : selectedDestination.length === 2
+                  ? "2 selected"
+                  : selectedDestination.length === 3
+                  ? "3 selected"
+                  : selectedDestination.length >= 4
+                  ? "Multiple selected"
+                  : "Destinations"
+              }}
             </mat-select-trigger>
 
             <mat-option>
@@ -183,19 +190,22 @@
             multiple
           >
             <!-- Custom label using mat-select-trigger to display a static label -->
+
             <mat-select-trigger>
+              Currency :
               {{
-                selectedCurrency?.includes("All")
-                  ? "Currency : All"
-                  : "Currency : "
+                selectedCurrency.includes("All")
+                  ? "All"
+                  : selectedCurrency.length === 1
+                  ? selectedCurrency[0]
+                  : selectedCurrency.length === 2
+                  ? "2 selected"
+                  : selectedCurrency.length === 3
+                  ? "3 selected"
+                  : selectedCurrency.length >= 4
+                  ? "Multiple selected"
+                  : "Currency"
               }}
-              @if ((selectedCurrency?.length || 0) > 1 &&
-              (selectedCurrency?.length || 0) - 1 !== uniqueCurrencies.length) {
-              <span class="example-additional-selection">
-                {{ (selectedCurrency?.length || 0) - 1 }}
-                {{ selectedCurrency?.length === 2 ? "selected" : "selected" }}
-              </span>
-              }
             </mat-select-trigger>
             <mat-option>
               <div class="flex justify-between items-center w-full">

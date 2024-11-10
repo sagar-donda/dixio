@@ -74,9 +74,7 @@ export class DashboardComponent implements OnInit {
   totalusdFeesInUsd: number = 0;
   chartConstructor = 'mapChart';
   private _selectedTab: string = 'snapshot';
-  constructor(private cdr: ChangeDetectorRef, private papa: Papa) {
-    console.log(this.formattedjson);
-  }
+  constructor(private cdr: ChangeDetectorRef, private papa: Papa) {}
   uniqueNetworks = ['VISA', 'SWIFT', 'Terrapay', 'Thunes', 'Nium'];
   uniqueChannels = ['Web', 'MobileApp', 'API', 'Branch'];
   uniqueDestinations = [
@@ -388,12 +386,6 @@ export class DashboardComponent implements OnInit {
       data: totalFeesPerRouteSeries[route],
       type: 'column',
     }));
-
-    console.log(
-      averageTimeToCompletionSeries.map((x) => ({
-        value: this.toFixedWithoutRounding(x, 2),
-      }))
-    );
     // Store the results in `allchartData`
     this.allchartData['performance'] = [
       {
@@ -543,7 +535,6 @@ export class DashboardComponent implements OnInit {
       default:
         return false;
     }
-    this.filterData(); // Re-apply filter with default values
   }
 
   // Toggle selection for all options when "All" checkbox is clicked
@@ -566,24 +557,28 @@ export class DashboardComponent implements OnInit {
           : [];
         break;
     }
-    console.log(this.selectedChannel);
+    console.log('selectedNetwork', ['All', ...this.uniqueNetworks]);
     this.filterData(); // Re-apply filter with default values
   }
 
   // Handle individual selection changes
   onSelectionChange(category: string) {
-    switch (category) {
-      case 'Networks':
+    console.log(category);
+    switch (category.toLowerCase()) {
+      case 'networks':
+        console.log(this.isAllSelected('All'));
         if (this.isAllSelected('All')) {
           this.selectedNetwork = ['All', ...this.uniqueNetworks];
+          console.log(this.selectedNetwork);
         } else if (
           this.selectedNetwork.filter((item) => item !== 'All').length ===
           this.uniqueNetworks.filter((item) => item !== 'All').length
         ) {
           this.selectedNetwork = ['All', ...this.uniqueNetworks];
+          console.log(this.selectedNetwork);
         }
         break;
-      case 'Channels':
+      case 'channels':
         if (this.isAllSelected('All')) {
           this.selectedChannel = ['All', ...this.uniqueChannels];
         } else if (
@@ -593,7 +588,7 @@ export class DashboardComponent implements OnInit {
           this.selectedChannel = ['All', ...this.uniqueChannels];
         }
         break;
-      case 'Destinations':
+      case 'destinations':
         if (this.isAllSelected('All')) {
           this.selectedDestination = ['All', ...this.uniqueDestinations];
         } else if (
@@ -603,7 +598,7 @@ export class DashboardComponent implements OnInit {
           this.selectedDestination = ['All', ...this.uniqueDestinations];
         }
         break;
-      case 'Currency':
+      case 'currency':
         if (this.isAllSelected('All')) {
           this.selectedCurrency = ['All', ...this.uniqueCurrencies];
         } else if (
@@ -614,6 +609,19 @@ export class DashboardComponent implements OnInit {
         }
         break;
     }
+
+    this.selectedNetwork = this.selectedNetwork.map((x) =>
+      x === undefined ? 'All' : x
+    );
+    this.selectedChannel = this.selectedChannel.map((x) =>
+      x === undefined ? 'All' : x
+    );
+    this.selectedDestination = this.selectedDestination.map((x) =>
+      x === undefined ? 'All' : x
+    );
+    this.selectedCurrency = this.selectedCurrency.map((x) =>
+      x === undefined ? 'All' : x
+    );
     console.log(this.selectedNetwork);
     this.filterData();
   }
@@ -1218,7 +1226,6 @@ export class DashboardComponent implements OnInit {
         ),
       }))
       .value();
-    console.log(groupedData);
     this.mapData = groupedData;
   }
 

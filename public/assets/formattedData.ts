@@ -10,7 +10,6 @@ const formattedData = [
     Route: 'SWIFT',
     FeesInUsd: '30,9',
     DateCompleted: '03/08/2024 00:00',
-
     DateCreated: '01/08/2024 00:00',
     Status: 'Completed',
     InitiationChannel: 'MobileApp',
