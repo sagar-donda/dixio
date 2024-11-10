@@ -769,7 +769,10 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.processData([], 'snapshot');
+    this.processData(this.filteredData, 'snapshot');
+    this.processData(this.filteredData, 'time-evolution');
+    this.processData(this.filteredData, 'map');
+    this.processData(this.filteredData, 'performance');
     this.filterData();
     this.updateChartList();
   }
@@ -1104,20 +1107,35 @@ export class DashboardComponent implements OnInit {
       (x) => x['Status'] === 'Completed'
     ).length;
 
-    this.totalusdamount = this.formattedjson
-      .filter((x) => x['Status'] === 'Completed')
+    this.totalusdamount = this.filteredWithoutDateData
+      .filter((x: any) => x['Status'] === 'Completed')
       .reduce((a, b) => {
-        return a + b['AmountInUSD'];
+        const val =
+          b.AmountInUSD === 'string'
+            ? parseFloat(b.AmountInUSD.replace(',', '.'))
+            : b.AmountInUSD || 0;
+        return a + val;
       }, 0);
-    this.totalusdFeesInUsd = this.formattedjson
-      .filter((x) => x['Status'] === 'Completed')
-      .reduce((a, b) => a + b['FeesInUsd'], 0);
+    this.totalusdFeesInUsd = this.filteredWithoutDateData
+      .filter((x: any) => x['Status'] === 'Completed')
+      .reduce((a, b) => {
+        const val =
+          b.FeesInUsd === 'string'
+            ? parseFloat(b.FeesInUsd.replace(',', '.'))
+            : parseFloat(b.FeesInUsd);
+        return a + val;
+      }, 0);
     this.noofunqiueuser = _.uniqBy(
       this.formattedjson.filter((x) => x['Status'] === 'Completed'),
       'InitiatorId'
     ).length;
 
-    this.processData(this.formattedjson, 'snapshot');
+    this.processData(this.filteredData, 'snapshot');
+    this.processData(this.filteredData, 'time-evolution');
+    this.processData(this.filteredData, 'map');
+    this.processData(this.filteredData, 'performance');
+    this.filterData();
+    this.updateChartList();
   }
   onFileChange(event: any) {
     const target: DataTransfer = <DataTransfer>event.target;
