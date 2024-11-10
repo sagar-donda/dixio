@@ -1489,7 +1489,7 @@ export class DashboardComponent implements OnInit {
                   enabled: true, // Hide the legend
                 },
                 tooltip: {
-                  pointFormat: '<b>${point.y:.2f} </b>',
+                  pointFormat: `<b>${chart.formateprefix}{point.y:.1f}${chart.formatesuffix} </b>`,
                 },
                 plotOptions: {
                   column: {
@@ -1513,7 +1513,7 @@ export class DashboardComponent implements OnInit {
                   text: '',
                 },
                 tooltip: {
-                  pointFormat: '<b>${point.y:.1f} </b>',
+                  pointFormat: `<b>${chart.formateprefix}{point.y:.1f}${chart.formatesuffix} </b>`,
                 },
                 xAxis: {
                   categories: this.days,
