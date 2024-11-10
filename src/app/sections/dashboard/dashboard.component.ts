@@ -187,7 +187,7 @@ export class DashboardComponent implements OnInit {
               : moment(record['DateCompleted']);
 
           const timeDifference = completeDate.diff(dateSent, 'minutes'); // Convert to minutes
-
+          record.timeDifference = timeDifference;
           // console.log(record['DateSent'], record, completeDate, timeDifference);
           return sum + timeDifference;
         }, 0);
@@ -197,12 +197,15 @@ export class DashboardComponent implements OnInit {
             totalMinutes,
             records.length
           ), // Average in minutes
+          records,
           averageCompletionMinitues: totalMinutes / records.length, // Average in hours
           averageCompletion: records.length, // Average in hours
           totalMinutes,
         };
       })
       .value();
+
+    console.log(averageTimeToCompletionData);
     const totalAvgMinutes =
       averageTimeToCompletionData.reduce(
         (a: number, b: any) => a + b.averageCompletionMinitues,
@@ -1229,9 +1232,12 @@ export class DashboardComponent implements OnInit {
                 },
               },
             },
+            // tooltip: {
+            //   headerFormat: '',
+            //   pointFormat: '{point.name} <b>{point.y:.0f}</b>',
+            // },
             tooltip: {
-              headerFormat: '',
-              pointFormat: '{point.name} <b>{point.y:.0f}</b>',
+              pointFormat: `<b>${chart.formateprefix}{point.y:.1f}${chart.formatesuffix} </b>`,
             },
             series: [
               {
@@ -1445,7 +1451,7 @@ export class DashboardComponent implements OnInit {
                   text: '',
                 },
                 tooltip: {
-                  pointFormat: '<b>${point.y:.1f} </b>',
+                  pointFormat: `<b>${chart.formateprefix}{point.y:.1f}${chart.formatesuffix} </b>`,
                 },
                 xAxis: {
                   categories: [
@@ -1467,24 +1473,13 @@ export class DashboardComponent implements OnInit {
                 legend: {
                   enabled: false, // Hide the legend
                 },
-                series:
-                  index === 3
-                    ? chart.data
-                    : [
-                        {
-                          name: '',
-                          data: chartData, // Example data
-                          lineWidth: 1,
-                        },
-                      ],
-                plotOptions:
-                  index === 3
-                    ? {
-                        column: {
-                          stacking: 'normal',
-                        },
-                      }
-                    : {},
+                series: [
+                  {
+                    name: '',
+                    data: chartData, // Example data
+                    lineWidth: 1,
+                  },
+                ],
               };
         }
       ),
