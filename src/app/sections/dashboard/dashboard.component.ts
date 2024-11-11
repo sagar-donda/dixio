@@ -160,7 +160,6 @@ export class DashboardComponent implements OnInit {
     // Get the number of days in the current month
     const daysInMonth = moment().daysInMonth();
     const daysInMonthArray = Array(daysInMonth).fill(0);
-
     // Average Time To Completion for each day in the current month
     const averageTimeToCompletionData = _(
       data.filter((x: any) => x['Status'] === 'Completed')
@@ -340,13 +339,20 @@ export class DashboardComponent implements OnInit {
       };
     }).reverse(); // Reverse to get the months in chronological order
 
-    // Loop through each of the last 12 months to calculate total fees per route
-    last12Months.forEach(({ monthIndex, year }, index) => {
+    // Define the months of interest (August and September)
+    const monthsToShow = [
+      { monthIndex: 7, year: 2024 }, // Replace with the specific year
+      { monthIndex: 8, year: 2024 }, // Replace with the specific year
+    ];
+    const monthNames = ['August', 'September']; // Fixed labels for x-axis
+
+    // Loop through each of the specified months (August and September)
+    monthsToShow.forEach(({ monthIndex, year }, index) => {
       const monthData = this.filteredWithoutDateData.filter((record: any) => {
-        const dateCompleted =
-          typeof record['DateCompleted'] === 'string'
-            ? moment(record['DateCompleted'], 'DD/MM/YYYY HH:mm')
-            : moment(record['DateCompleted']);
+        const dateCompleted = moment(
+          record['DateCompleted'],
+          'DD/MM/YYYY HH:mm'
+        );
         return (
           dateCompleted.month() === monthIndex && dateCompleted.year() === year
         );
@@ -371,7 +377,7 @@ export class DashboardComponent implements OnInit {
       // Populate the totalFeesPerRouteSeries object with the monthly data
       groupedData.forEach((routeData) => {
         if (!totalFeesPerRouteSeries[routeData.route]) {
-          totalFeesPerRouteSeries[routeData.route] = Array(12).fill(0); // Initialize with 0s for each month
+          totalFeesPerRouteSeries[routeData.route] = Array(2).fill(0); // Initialize with 0s for two months
         }
         totalFeesPerRouteSeries[routeData.route][index] = routeData.totalFees;
       });
@@ -386,6 +392,7 @@ export class DashboardComponent implements OnInit {
       data: totalFeesPerRouteSeries[route],
       type: 'column',
     }));
+
     // Store the results in `allchartData`
     this.allchartData['performance'] = [
       {
@@ -416,11 +423,12 @@ export class DashboardComponent implements OnInit {
         ytitle: 'Average Fee per Transaction',
       },
       {
-        title: 'Total Fees Per Day Per Route',
+        title: 'Total Fees Per Month Per Route',
         data: formattedTotalFeesPerRouteSeries,
         formatesuffix: '',
         formateprefix: '',
-        ytitle: 'Total Fees Per Day Per Route',
+        categories: monthNames,
+        ytitle: 'Total Fees Per Month Per Route',
       },
     ];
   }
@@ -557,25 +565,20 @@ export class DashboardComponent implements OnInit {
           : [];
         break;
     }
-    console.log('selectedNetwork', ['All', ...this.uniqueNetworks]);
     this.filterData(); // Re-apply filter with default values
   }
 
   // Handle individual selection changes
   onSelectionChange(category: string) {
-    console.log(category);
     switch (category.toLowerCase()) {
       case 'networks':
-        console.log(this.isAllSelected('All'));
         if (this.isAllSelected('All')) {
           this.selectedNetwork = ['All', ...this.uniqueNetworks];
-          console.log(this.selectedNetwork);
         } else if (
           this.selectedNetwork.filter((item) => item !== 'All').length ===
           this.uniqueNetworks.filter((item) => item !== 'All').length
         ) {
           this.selectedNetwork = ['All', ...this.uniqueNetworks];
-          console.log(this.selectedNetwork);
         }
         break;
       case 'channels':
@@ -622,7 +625,6 @@ export class DashboardComponent implements OnInit {
     this.selectedCurrency = this.selectedCurrency.map((x) =>
       x === undefined ? 'All' : x
     );
-    console.log(this.selectedNetwork);
     this.filterData();
   }
   getLastThreeMonths() {
@@ -763,7 +765,6 @@ export class DashboardComponent implements OnInit {
             : parseFloat(b.FeesInUsd);
         return a + val;
       }, 0);
-    console.log(this.totalusdFeesInUsd);
     this.noofunqiueuser = _.uniqBy(
       this.filteredData.filter((x: any) => x['Status'] === 'Completed'),
       'InitiatorId'
@@ -1142,7 +1143,7 @@ export class DashboardComponent implements OnInit {
     this.processData(this.filteredData, 'time-evolution');
     this.processData(this.filteredData, 'map');
     this.processData(this.filteredData, 'performance');
-    this.filterData();
+    this.clearFilters();
     this.updateChartList();
   }
   onFileChange(event: any) {
@@ -1312,7 +1313,7 @@ export class DashboardComponent implements OnInit {
               //   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
               //   18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
               // ],
-              // endOnTick: false, // Ensures the axis doesn't end on a tick, showing all categories
+              endOnTick: false, // Ensures the axis doesn't end on a tick, showing all categories
               labels: {
                 formatter: function () {
                   // Assuming `this.value` represents the index within `categories`
@@ -1320,12 +1321,13 @@ export class DashboardComponent implements OnInit {
                 },
               },
               title: {
-                text: '',
+                text: 'Days',
+                offset: 50, // Adds a margin of 50 pixels to the x-axis title
               },
             },
             yAxis: {
               title: {
-                text: chart.name,
+                text: chart.title,
               },
               labels: {
                 formatter: function () {
@@ -1451,7 +1453,7 @@ export class DashboardComponent implements OnInit {
                       }</td>
                     </tr>
                     <tr>
-                      <td style="text-align: left;"> Of Transactions:</td>
+                      <td style="text-align: left;"># Of Transactions:</td>
                       <td style="text-align: right; font-weight: bold;">${Number(
                         point.transactions
                       ).toLocaleString()}</td>
@@ -1535,7 +1537,7 @@ export class DashboardComponent implements OnInit {
                   text: 'Total fees per month per route',
                 },
                 xAxis: {
-                  categories: this.days,
+                  categories: chart.categories,
                 },
                 yAxis: {
                   min: 0,
@@ -1583,6 +1585,10 @@ export class DashboardComponent implements OnInit {
                       // Assuming `this.value` represents the index within `categories`
                       return (this as any).value + 1; // Displays the day number (1-based index)
                     },
+                  },
+                  title: {
+                    text: 'Days',
+                    offset: 50, // Adds a margin of 50 pixels to the x-axis title
                   },
                 },
                 yAxis: {
