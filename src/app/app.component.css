@@ -94,18 +94,6 @@
   width: 220px;
 }
 
-@media screen and (min-width: 1536px) {
-  .sidenav {
-    width: 300px !important; /* !important to override inline styles */
-  }
-}
-
 .example-button-container {
   width: 190px;
-}
-
-@media screen and (min-width: 1536px) {
-  .example-button-container {
-    width: 268px !important; /* !important to override inline styles */
-  }
 }

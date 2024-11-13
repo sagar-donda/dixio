@@ -3,12 +3,14 @@
     <!-- <h1>Dashboard</h1> -->
     <!-- Add filter components or buttons here -->
     <!-- app.component.html -->
-    <div class="flex items-center space-x-4 px-4 py-4 bg-white justify-between">
+    <div class="flex items-center py-4 px-4 bg-white justify-between">
       <!-- Dashboard Title -->
-      <h2 class="text-xl font-semibold text-gray-800 w-min">Dashboard</h2>
+      <h2 class="flex-none text-xl font-semibold text-gray-800 w-min">
+        Dashboard
+      </h2>
 
       <!-- Vertical Divider -->
-      <div class="h-6 border-l border-gray-300 mx-4"></div>
+      <div class="flex-none h-6 border-l border-gray-300 mx-2"></div>
 
       <!-- Filters Button -->
       <button
@@ -20,9 +22,9 @@
       </button>
 
       <!-- Select Fields -->
-      <div class="flex space-x-4">
+      <div class="flex grow space-x-2">
         <!-- Networks Select -->
-        <mat-form-field appearance="outline" class="w-36 small-select">
+        <mat-form-field appearance="outline" class="w-44 small-select">
           <mat-select
             placeholder="Networks"
             [(ngModel)]="selectedNetwork"
@@ -69,7 +71,7 @@
         </mat-form-field>
 
         <!-- Channels Select -->
-        <mat-form-field appearance="outline" class="w-36 small-select">
+        <mat-form-field appearance="outline" class="w-44 small-select">
           <mat-select
             placeholder="Channels"
             [(ngModel)]="selectedChannel"
@@ -112,7 +114,7 @@
         </mat-form-field>
 
         <!-- Date Range Select (Single Select) -->
-        <mat-form-field appearance="outline" class="w-36 small-select">
+        <mat-form-field appearance="outline" class="w-44 small-select">
           <mat-select
             placeholder="Date Range"
             [(ngModel)]="selectedDateRange"
@@ -125,7 +127,7 @@
         </mat-form-field>
 
         <!-- Destinations Select -->
-        <mat-form-field appearance="outline" class="w-36 small-select">
+        <mat-form-field appearance="outline" class="w-48 small-select">
           <mat-select
             placeholder="Destinations"
             [(ngModel)]="selectedDestination"
@@ -170,7 +172,7 @@
         </mat-form-field>
 
         <!-- Currency Select -->
-        <mat-form-field appearance="outline" class="w-36 small-select">
+        <mat-form-field appearance="outline" class="w-44 small-select">
           <mat-select
             placeholder="Currency"
             [(ngModel)]="selectedCurrency"
@@ -214,20 +216,18 @@
           </mat-select>
         </mat-form-field>
       </div>
-
-      <!-- Clear Button -->
       <!-- Clear Button -->
       <button
         mat-raised-button
         color="primary"
-        class="ml-4 clear font-bold"
+        class="ml-4 clear font-bold grow-0"
         (click)="clearFilters()"
       >
         Clear
       </button>
     </div>
   </div>
-  <div class="mb-4 px-6 flex justify-between">
+  <div class="mb-4 px-4 flex justify-between">
     <!-- <h1>Dashboard</h1> -->
     <!-- Add filter components or buttons here -->
     <mat-button-toggle-group
@@ -276,7 +276,7 @@
   <div class="stats-overview">
     <ng-container *ngIf="selectedTab !== 'performance'; else defaultkipbox">
       <div
-        class="grid grid-cols-5 justify-items-center chart_border bg-white items-center gap-4 py-6 mx-6 rounded-xl divide-x"
+        class="grid grid-cols-5 justify-items-center chart_border bg-white items-center gap-4 py-6 mx-4 rounded-xl divide-x"
       >
         <div class="lg:px-4 w-full flex flex-col gap-0">
           <div class="flex items-center justify-between">
@@ -475,7 +475,7 @@
     </ng-container>
     <ng-template #defaultkipbox>
       <div
-        class="grid grid-cols-5 justify-items-center chart_border bg-white items-center gap-4 py-6 mx-6 rounded-xl divide-x"
+        class="grid grid-cols-5 justify-items-center chart_border bg-white items-center gap-4 py-6 mx-4 rounded-xl divide-x"
       >
         <div class="lg:px-4 w-full flex flex-col gap-0">
           <div class="flex items-center justify-between">
@@ -683,14 +683,14 @@
         </div>
       </div>
     </ng-template>
-    <div class="chartlist mx-6">
+    <div class="chartlist mx-4">
       <div class="flex flex-wrap mt-4">
         <div
           *ngFor="let options of chartOptionsArray; let i = index"
           class="w-full mb-4"
           [ngClass]="{
             'lg:w-1/2': chartOptionsArray.length > 1,
-            'lg:pr-2': (i + 1) % 2 !== 0,
+            'lg:pr-2': selectedTab !== 'map' && (i + 1) % 2 !== 0,
             'lg:pl-2': (i + 1) % 2 === 0
           }"
         >
@@ -698,7 +698,7 @@
             class="p-4 bg-white rounded-lg flex flex-col border chart_border"
           >
             <!-- First Row: Title -->
-            <div class="w-full text-xl font-bold chart_title">
+            <div class="w-full text-xl font-bold chart_title pb-8">
               {{ chartDataArray[i]?.title }}
             </div>
 

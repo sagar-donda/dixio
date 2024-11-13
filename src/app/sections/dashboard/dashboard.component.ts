@@ -51,6 +51,7 @@ export class DashboardComponent implements OnInit {
   chartOptionsArray: Highcharts.Options[] = [];
   chartLabels: string[] = [];
   chartDataArray: any[] = [];
+  starttoendmonthtitle: string = '';
   formattedjson: any[] = formattedData.map((x) => {
     return {
       ...x,
@@ -158,32 +159,51 @@ export class DashboardComponent implements OnInit {
 
   performanceData(data: any) {
     // Get the number of days in the current month
-    const daysInMonth = moment().daysInMonth();
-    const daysInMonthArray = Array(daysInMonth).fill(0);
+    const monthnumber = ['selectedDateRange', 'currentmonth'].includes(
+      this.selectedDateRange
+    )
+      ? 7
+      : 8;
+    // Determine min and max dates from the data
+    const dateArray = data
+      .filter((record: any) => record['DateSent'])
+      .map((record: any) =>
+        typeof record['DateSent'] === 'string'
+          ? moment(record['DateSent'], 'DD/MM/YYYY HH:mm')
+          : moment(record['DateSent'])
+      );
+
+    const minDate = moment.min(dateArray);
+    const maxDate = moment.max(dateArray);
+    // Get the start and end dates from minDate and maxDate
+    const startDate = minDate.clone().startOf('day');
+    const endDate = maxDate.clone().startOf('day');
+    this.starttoendmonthtitle = `${startDate.format(
+      'D MMM YYYY'
+    )} To ${endDate.format('D MMM YYYY')}`;
+    // Create an array to hold each day within the date range
+    const daysInMonthArray = [];
+    let currentDate = startDate;
+
+    while (currentDate.isSameOrBefore(endDate)) {
+      daysInMonthArray.push(currentDate.format('D MMM YYYY')); // Format as 'day (month 3 characters)'
+      currentDate = currentDate.add(1, 'day'); // Move to the next day
+    }
+    this.days = [...daysInMonthArray];
+    // Date formatter for 'day (month)'
     // Average Time To Completion for each day in the current month
+    // Group and calculate average completion time per day
     const averageTimeToCompletionData = _(
       data.filter((x: any) => x['Status'] === 'Completed')
     )
       .filter((record) => record['DateSent'] && record['DateCompleted'])
-      .filter((record) => {
-        const dateSent =
+      .groupBy((record) => {
+        const DateSent =
           typeof record['DateSent'] === 'string'
             ? moment(record['DateSent'], 'DD/MM/YYYY HH:mm')
             : moment(record['DateSent']);
-        const dateCompleted =
-          typeof record['DateCompleted'] === 'string'
-            ? moment(record['DateCompleted'], 'DD/MM/YYYY HH:mm')
-            : moment(record['DateCompleted']);
-        return (
-          dateSent.month() === dateCompleted.month() &&
-          dateSent.year() === dateCompleted.year()
-        );
+        return DateSent.format('D MMM YYYY'); // Format to 'day (month)'
       })
-      .groupBy((record) =>
-        typeof record['DateCompleted'] === 'string'
-          ? moment(record['DateCompleted'], 'DD/MM/YYYY HH:mm').format('DD')
-          : moment(record['DateCompleted']).format('DD')
-      )
       .map((records, day) => {
         const totalMinutes = records.reduce((sum, record) => {
           const dateSent =
@@ -194,23 +214,20 @@ export class DashboardComponent implements OnInit {
             typeof record['DateCompleted'] === 'string'
               ? moment(record['DateCompleted'], 'DD/MM/YYYY HH:mm')
               : moment(record['DateCompleted']);
-
-          const timeDifference = completeDate.diff(dateSent, 'minutes');
-          return sum + timeDifference;
+          return sum + completeDate.diff(dateSent, 'minutes');
         }, 0);
+
         return {
-          day: parseInt(day, 10),
+          day: day, // Keep 'day (month)' format
           averageCompletionTime: this.formatMinutesToHoursAndMinutes(
             totalMinutes,
             records.length
           ),
           averageCompletionMinutes: totalMinutes / records.length,
-          averageCompletion: records.length,
           totalMinutes,
         };
       })
       .value();
-
     const totalAvgMinutes =
       averageTimeToCompletionData.reduce(
         (a: number, b: any) => a + b.averageCompletionMinutes,
@@ -232,8 +249,16 @@ export class DashboardComponent implements OnInit {
         : `${exactMinutes}Mins`;
 
     const averageTimeToCompletionSeries = daysInMonthArray.map((_, day) => {
-      const data = averageTimeToCompletionData.find((d) => d.day === day + 1); // days start from 1
-      return data ? data.averageCompletionTime : 0;
+      const data = averageTimeToCompletionData.find((d) => d.day === _); // days start from 1
+      if (data)
+        return {
+          date: data?.day,
+          averageCompletionTime: data?.averageCompletionTime || 0,
+        };
+      return {
+        date: _,
+        averageCompletionTime: 0,
+      };
     });
 
     // Average STP Rate Data for each day in the current month
@@ -241,11 +266,13 @@ export class DashboardComponent implements OnInit {
       data.filter((x: any) => x['Status'] !== 'Pending')
     )
       .filter((record) => record['DateSent'])
-      .groupBy((record) =>
-        typeof record['DateCompleted'] === 'string'
-          ? moment(record['DateCompleted'], 'DD/MM/YYYY HH:mm').format('DD')
-          : moment(record['DateCompleted']).format('DD')
-      )
+      .groupBy((record) => {
+        const DateSent =
+          typeof record['DateSent'] === 'string'
+            ? moment(record['DateSent'], 'DD/MM/YYYY HH:mm')
+            : moment(record['DateSent']);
+        return DateSent.format('D MMM YYYY'); // Format to 'day (month)'
+      })
       .map((records, day) => {
         const completedCount = records.filter(
           (record) => record.Status === 'Completed'
@@ -255,7 +282,7 @@ export class DashboardComponent implements OnInit {
         ).length;
         const stpRate = (completedCount / (completedCount + failedCount)) * 100;
         return {
-          day: parseInt(day, 10),
+          day: day,
           stpRate: stpRate,
           completedCount,
           failedCount,
@@ -271,7 +298,7 @@ export class DashboardComponent implements OnInit {
     );
 
     const averageStpRateSeries = daysInMonthArray.map((_, day) => {
-      const data = averageStpRateData.find((d) => d.day === day + 1);
+      const data = averageStpRateData.find((d) => d.day === _);
       return data ? data.stpRate : 0;
     });
     const feesArray = data
@@ -295,11 +322,13 @@ export class DashboardComponent implements OnInit {
       data.filter((x: any) => x['Status'] !== 'Pending')
     )
       .filter((record) => record['DateSent'] && record['FeesInUsd'])
-      .groupBy((record) =>
-        typeof record['DateCompleted'] === 'string'
-          ? moment(record['DateCompleted'], 'DD/MM/YYYY HH:mm').format('DD')
-          : moment(record['DateCompleted']).format('DD')
-      )
+      .groupBy((record) => {
+        const DateSent =
+          typeof record['DateSent'] === 'string'
+            ? moment(record['DateSent'], 'DD/MM/YYYY HH:mm')
+            : moment(record['DateSent']);
+        return DateSent.format('D MMM YYYY'); // Format to 'day (month)'
+      })
       .map((records, day) => {
         const totalFees = records.reduce(
           (sum, record) =>
@@ -307,7 +336,7 @@ export class DashboardComponent implements OnInit {
           0
         );
         return {
-          day: parseInt(day, 10),
+          day: day,
           averageFee: totalFees / records.length,
         };
       })
@@ -322,7 +351,7 @@ export class DashboardComponent implements OnInit {
     );
 
     const averageFeePerTransactionSeries = daysInMonthArray.map((_, day) => {
-      const data = averageFeePerTransactionData.find((d) => d.day === day + 1);
+      const data = averageFeePerTransactionData.find((d) => d.day === _);
       return data ? data.averageFee : 0;
     });
 
@@ -398,7 +427,8 @@ export class DashboardComponent implements OnInit {
       {
         title: 'Average Time To Completion',
         data: averageTimeToCompletionSeries.map((x) => ({
-          value: this.toFixedWithoutRounding(x, 2),
+          label: x?.date,
+          value: this.toFixedWithoutRounding(x?.averageCompletionTime || 0, 2),
         })),
         formatesuffix: ' Mins',
         formateprefix: '',
@@ -438,45 +468,57 @@ export class DashboardComponent implements OnInit {
     const dayOfMonth = date.getDate();
     return Math.ceil((dayOfMonth + startOfMonth.getDay()) / 7);
   }
+
   processTimeEvolutionData(data: any) {
-    // Group data by day of DateSent within the current month
+    // Determine min and max dates from the data
+    const dateArray = data
+      .filter((record: any) => record['DateSent'])
+      .map((record: any) =>
+        typeof record['DateSent'] === 'string'
+          ? moment(record['DateSent'], 'DD/MM/YYYY HH:mm')
+          : moment(record['DateSent'])
+      );
+
+    const minDate = moment.min(dateArray);
+    const maxDate = moment.max(dateArray);
+    const startDate = minDate.clone().startOf('day');
+    const endDate = maxDate.clone().startOf('day');
+    this.starttoendmonthtitle = `${startDate.format(
+      'D MMM YYYY'
+    )} To ${endDate.format('D MMM YYYY')}`;
+
+    const daysInMonth: any[] = [];
+    let currentDate = startDate;
+
+    while (currentDate.isSameOrBefore(endDate)) {
+      daysInMonth.push(currentDate.format('D MMM YYYY'));
+      currentDate = currentDate.add(1, 'day');
+    }
+    this.days = [...daysInMonth];
+
     const groupedData = _(data)
       .groupBy((item) => {
         const date =
           typeof item['DateSent'] === 'string'
             ? moment(item['DateSent'], 'DD/MM/YYYY HH:mm').toDate()
             : moment(item['DateSent']).toDate();
-        return `${date.getMonth() + 1}-${date.getDate()}`; // Unique key for each day in the month
+        return `${moment(date).format('D MMM YYYY')}`;
       })
       .value();
 
-    // Get the number of days in the current month for initializing arrays
-    const daysInMonth = moment().daysInMonth();
+    const numberOfTransactions = daysInMonth.map(() => 0);
+    const valueOfTransactions = daysInMonth.map(() => 0);
+    const avgValuePerTransaction = daysInMonth.map(() => 0);
+    const uniqueUsers = daysInMonth.map(() => 0);
 
-    // Initialize each metric array for chart data, assuming a maximum of days in the current month
-    const numberOfTransactions = Array(daysInMonth).fill(0);
-    const valueOfTransactions = Array(daysInMonth).fill(0);
-    const avgValuePerTransaction = Array(daysInMonth).fill(0);
-    const uniqueUsers = Array(daysInMonth).fill(0);
+    daysInMonth.forEach((day, index) => {
+      const dayData = groupedData[day] || [];
 
-    // Populate each metric
-    Object.keys(groupedData).forEach((dayKey) => {
-      const [month, day] = dayKey.split('-').map(Number); // Split key to get month and day
-      const dayIndex = day - 1; // Array index for each day
-      const dayData = groupedData[dayKey];
-
-      // Number of Transactions
-      numberOfTransactions[dayIndex] = dayData.length;
-
-      // Value of Transactions (Sum of AmountInUSD)
-      valueOfTransactions[dayIndex] = _.sumBy(dayData, 'AmountInUSD');
-
-      // Average Value Per Transaction
-      avgValuePerTransaction[dayIndex] =
-        valueOfTransactions[dayIndex] / (numberOfTransactions[dayIndex] || 1);
-
-      // Number of Unique Users (count of unique InitiatorId)
-      uniqueUsers[dayIndex] = _.uniqBy(dayData, 'InitiatorId').length;
+      numberOfTransactions[index] = dayData.length;
+      valueOfTransactions[index] = _.sumBy(dayData, 'AmountInUSD');
+      avgValuePerTransaction[index] =
+        valueOfTransactions[index] / (numberOfTransactions[index] || 1);
+      uniqueUsers[index] = _.uniqBy(dayData, 'InitiatorId').length;
     });
 
     // Prepare each chart's data
@@ -677,12 +719,10 @@ export class DashboardComponent implements OnInit {
       case 'currentmonth':
         startDate = moment().subtract(2, 'month').startOf('month'); // Start of the current month
         endDate = moment().subtract(2, 'month').endOf('month'); // End of the current month
-        this.days = Array.from({ length: endDate.date() }, (_, i) => i + 1);
         break;
       case 'lastmonth':
         startDate = moment().subtract(3, 'month').startOf('month'); // Start of the previous month
         endDate = moment().subtract(3, 'month').endOf('month'); // End of the previous month
-        this.days = Array.from({ length: endDate.date() }, (_, i) => i + 1);
         break;
       case 'lastfourmonth':
         startDate = moment().subtract(3, 'month').startOf('month'); // Start of the previous 3 month
@@ -747,7 +787,7 @@ export class DashboardComponent implements OnInit {
       (x: any) => x['Status'] === 'Completed'
     ).length;
 
-    this.totalusdamount = this.filteredWithoutDateData
+    this.totalusdamount = this.filteredData
       .filter((x: any) => x['Status'] === 'Completed')
       .reduce((a, b) => {
         const val =
@@ -756,7 +796,7 @@ export class DashboardComponent implements OnInit {
             : b.AmountInUSD || 0;
         return a + val;
       }, 0);
-    this.totalusdFeesInUsd = this.filteredWithoutDateData
+    this.totalusdFeesInUsd = this.filteredData
       .filter((x: any) => x['Status'] === 'Completed')
       .reduce((a, b) => {
         const val =
@@ -948,7 +988,7 @@ export class DashboardComponent implements OnInit {
       // Update chart data based on the latest changes
       this.updateChartList();
     } else if (tabname === 'map') {
-      data = data.filter((x) => x['Status'] !== 'Pending');
+      data = data.filter((x) => x['Status'] === 'Completed');
       this.generateMapData(data);
       // Update chart data based on the latest changes
       this.updateChartList();
@@ -1314,15 +1354,9 @@ export class DashboardComponent implements OnInit {
               //   18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
               // ],
               endOnTick: false, // Ensures the axis doesn't end on a tick, showing all categories
-              labels: {
-                formatter: function () {
-                  // Assuming `this.value` represents the index within `categories`
-                  return (this as any).value + 1; // Displays the day number (1-based index)
-                },
-              },
               title: {
-                text: 'Days',
-                offset: 50, // Adds a margin of 50 pixels to the x-axis title
+                text: this.starttoendmonthtitle,
+                offset: 100, // Adds a margin of 50 pixels to the x-axis title
               },
             },
             yAxis: {
@@ -1361,9 +1395,18 @@ export class DashboardComponent implements OnInit {
               },
             },
             tooltip: {
+              headerFormat: '<span>{point.key}</span><br/>', // Displays the date directly
               pointFormat: `<b>${chart.formateprefix || ''}{point.y:.1f}${
                 chart.formatesuffix || ''
               } </b>`,
+              formatter: function () {
+                return (
+                  `<span>${(this as any).x}</span><br/>` +
+                  `<b>${chart.formateprefix || ''}${(this as any).y.toFixed(
+                    1
+                  )}${chart.formatesuffix || ''}</b>`
+                );
+              },
             },
             series: [
               {
@@ -1526,7 +1569,6 @@ export class DashboardComponent implements OnInit {
             y: value, // Highcharts expects 'y' for the value
             color,
           }));
-
           // Return a new chartOptions object for each chart
           return index === 3
             ? {
@@ -1576,19 +1618,30 @@ export class DashboardComponent implements OnInit {
                   text: '',
                 },
                 tooltip: {
-                  pointFormat: `<b>${chart.formateprefix}{point.y:.1f}${chart.formatesuffix} </b>`,
+                  headerFormat: '<span>{point.name}</span><br/>', // Displays the date directly
+                  pointFormat: `<b>${chart.formateprefix || ''}{point.y:.1f}${
+                    chart.formatesuffix || ''
+                  } </b>`,
+                  formatter: function () {
+                    return (
+                      `<span>${(this as any).x}</span><br/>` +
+                      `<b>${chart.formateprefix || ''}${(this as any).y.toFixed(
+                        1
+                      )}${chart.formatesuffix || ''}</b>`
+                    );
+                  },
                 },
                 xAxis: {
                   categories: this.days,
-                  labels: {
-                    formatter: function () {
-                      // Assuming `this.value` represents the index within `categories`
-                      return (this as any).value + 1; // Displays the day number (1-based index)
-                    },
-                  },
+                  // labels: {
+                  //   formatter: function () {
+                  //     // Assuming `this.value` represents the index within `categories`
+                  //     return (this as any).value + 1; // Displays the day number (1-based index)
+                  //   },
+                  // },
                   title: {
-                    text: 'Days',
-                    offset: 50, // Adds a margin of 50 pixels to the x-axis title
+                    text: this.starttoendmonthtitle,
+                    offset: 100, // Adds a margin of 50 pixels to the x-axis title
                   },
                 },
                 yAxis: {
@@ -1602,24 +1655,14 @@ export class DashboardComponent implements OnInit {
                 legend: {
                   enabled: false, // Hide the legend
                 },
-                series:
-                  index === 3
-                    ? chart.data
-                    : [
-                        {
-                          name: '',
-                          data: chartData, // Example data
-                          lineWidth: 1,
-                        },
-                      ],
-                plotOptions:
-                  index === 3
-                    ? {
-                        column: {
-                          stacking: 'normal',
-                        },
-                      }
-                    : {},
+                series: [
+                  {
+                    name: '',
+                    data: chartData, // Example data
+                    lineWidth: 1,
+                  },
+                ],
+                plotOptions: {},
               };
         }
       ),

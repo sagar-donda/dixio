@@ -141,6 +141,9 @@ body {
 .mdc-text-field--outlined {
   padding-left: 0px !important;
 }
+.mdc-text-field {
+  padding: 0px !important;
+}
 .mdc-list-item__primary-text {
   width: 100%;
   display: flex;
