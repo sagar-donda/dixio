@@ -185,8 +185,8 @@ export class DashboardComponent implements OnInit {
     const daysInMonthArray = [];
     let currentDate = startDate;
 
-    while (currentDate.isSameOrBefore(endDate)) {
-      daysInMonthArray.push(currentDate.format('D MMM YYYY')); // Format as 'day (month 3 characters)'
+    while (currentDate.isSameOrBefore(endDate.endOf('month'))) {
+      daysInMonthArray.push(currentDate.format('D MMM')); // Format as 'day (month 3 characters)'
       currentDate = currentDate.add(1, 'day'); // Move to the next day
     }
     this.days = [...daysInMonthArray];
@@ -202,7 +202,7 @@ export class DashboardComponent implements OnInit {
           typeof record['DateSent'] === 'string'
             ? moment(record['DateSent'], 'DD/MM/YYYY HH:mm')
             : moment(record['DateSent']);
-        return DateSent.format('D MMM YYYY'); // Format to 'day (month)'
+        return DateSent.format('D MMM'); // Format to 'day (month)'
       })
       .map((records, day) => {
         const totalMinutes = records.reduce((sum, record) => {
@@ -228,6 +228,7 @@ export class DashboardComponent implements OnInit {
         };
       })
       .value();
+
     const totalAvgMinutes =
       averageTimeToCompletionData.reduce(
         (a: number, b: any) => a + b.averageCompletionMinutes,
@@ -260,7 +261,6 @@ export class DashboardComponent implements OnInit {
         averageCompletionTime: 0,
       };
     });
-
     // Average STP Rate Data for each day in the current month
     const averageStpRateData = _(
       data.filter((x: any) => x['Status'] !== 'Pending')
@@ -271,7 +271,7 @@ export class DashboardComponent implements OnInit {
           typeof record['DateSent'] === 'string'
             ? moment(record['DateSent'], 'DD/MM/YYYY HH:mm')
             : moment(record['DateSent']);
-        return DateSent.format('D MMM YYYY'); // Format to 'day (month)'
+        return DateSent.format('D MMM'); // Format to 'day (month)'
       })
       .map((records, day) => {
         const completedCount = records.filter(
@@ -327,7 +327,7 @@ export class DashboardComponent implements OnInit {
           typeof record['DateSent'] === 'string'
             ? moment(record['DateSent'], 'DD/MM/YYYY HH:mm')
             : moment(record['DateSent']);
-        return DateSent.format('D MMM YYYY'); // Format to 'day (month)'
+        return DateSent.format('D MMM'); // Format to 'day (month)'
       })
       .map((records, day) => {
         const totalFees = records.reduce(
@@ -490,8 +490,8 @@ export class DashboardComponent implements OnInit {
     const daysInMonth: any[] = [];
     let currentDate = startDate;
 
-    while (currentDate.isSameOrBefore(endDate)) {
-      daysInMonth.push(currentDate.format('D MMM YYYY'));
+    while (currentDate.isSameOrBefore(endDate.endOf('month'))) {
+      daysInMonth.push(currentDate.format('D MMM'));
       currentDate = currentDate.add(1, 'day');
     }
     this.days = [...daysInMonth];
@@ -502,7 +502,7 @@ export class DashboardComponent implements OnInit {
           typeof item['DateSent'] === 'string'
             ? moment(item['DateSent'], 'DD/MM/YYYY HH:mm').toDate()
             : moment(item['DateSent']).toDate();
-        return `${moment(date).format('D MMM YYYY')}`;
+        return `${moment(date).format('D MMM')}`;
       })
       .value();
 
@@ -1544,6 +1544,7 @@ export class DashboardComponent implements OnInit {
               name: 'Transactions',
               joinBy: ['iso-a2', 'code'],
               data: this.mapData, // Use dynamic map data here
+              minSize: '10%', // Minimum size of the bubble
               maxSize: '15%',
               color: {
                 linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
