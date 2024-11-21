@@ -178,9 +178,11 @@ export class DashboardComponent implements OnInit {
     // Get the start and end dates from minDate and maxDate
     const startDate = minDate.clone().startOf('day');
     const endDate = maxDate.clone().startOf('day');
-    this.starttoendmonthtitle = `${startDate.format(
+    const adjustedStartDate = minDate.startOf('month');
+    const adjustedEndDate = maxDate.endOf('month');
+    this.starttoendmonthtitle = `${adjustedStartDate.format(
       'D MMM YYYY'
-    )} To ${endDate.format('D MMM YYYY')}`;
+    )} To ${adjustedEndDate.format('D MMM YYYY')}`;
     // Create an array to hold each day within the date range
     const daysInMonthArray = [];
     let currentDate = startDate;
@@ -483,10 +485,12 @@ export class DashboardComponent implements OnInit {
     const maxDate = moment.max(dateArray);
     const startDate = minDate.clone().startOf('day');
     const endDate = maxDate.clone().startOf('day');
-    this.starttoendmonthtitle = `${startDate.format(
+    // Ensure the endDate reflects the last date of its month
+    const adjustedStartDate = minDate.startOf('month');
+    const adjustedEndDate = maxDate.endOf('month');
+    this.starttoendmonthtitle = `${adjustedStartDate.format(
       'D MMM YYYY'
-    )} To ${endDate.format('D MMM YYYY')}`;
-
+    )} To ${adjustedEndDate.format('D MMM YYYY')}`;
     const daysInMonth: any[] = [];
     let currentDate = startDate;
 
